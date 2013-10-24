@@ -40,7 +40,7 @@ namespace topo {
     }
 
     //
-    // node:  ( "vrouter" 
+    // node:  ( "vrouter" "opt1.img"
     //          [
     //              [ "eth0" 192.168.0.1/24 -> vswitch0 ]
     //              [ "eth1" 192.168.1.1/24 -> vswitch1 ]
@@ -93,7 +93,7 @@ namespace topo {
     }
 
     //
-    // Switches... many Switch, organised as a map
+    // Switches... many Switch, organised in a map
     //
     
     using Switches = std::map<std::string, uint32_t>;
