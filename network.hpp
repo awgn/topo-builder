@@ -50,20 +50,28 @@ namespace topo {
 
 
     using Node = std::tuple<std::string,        // id/name
+                            std::string,        // image
                             std::vector<Port>>  // port list
                             ;
-
-    inline std::vector<Port>
-    node_ports(Node const &n)
-    {
-        return std::get<1>(n);
-    }
 
     inline std::string 
     node_name(Node const &n)
     {
         return std::get<0>(n);
     }
+    
+    inline std::string 
+    node_image(Node const &n)
+    {
+        return std::get<1>(n);
+    }
+
+    inline std::vector<Port>
+    node_ports(Node const &n)
+    {
+        return std::get<2>(n);
+    }
+
 
     //
     // Switch...
