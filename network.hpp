@@ -8,9 +8,11 @@
 
 namespace topo {
 
+    //  
     //  port: ( "eth0" 192.168.0.1/24 -> vswitch0 )
     //
-
+    //
+    
     using port = std::pair<
                             std::tuple<std::string,    // id/name
                                        net::address>   // network_address/mask
@@ -37,7 +39,7 @@ namespace topo {
         return p.second;
     }
 
-
+    //
     // node:  ( "vrouter" 
     //          [
     //              ( "eth0" 192.168.0.1/24 -> vswitch0 )
