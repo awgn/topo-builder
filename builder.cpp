@@ -28,7 +28,7 @@ namespace topo
     {
         auto s = get_switches(ns);
 
-        auto out = script::make_switches(s);
+        auto out = script::make_bridges(s);
 
         std::cout << show (out) << std::endl; 
 
