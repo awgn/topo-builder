@@ -13,19 +13,17 @@ namespace topo {
     };
 
 
-namespace basic {
-
+    namespace basic {
     namespace parser {
 
         // declare a vector of switching services:
         //
-        MAP_KEY(std::vector<node>, nodes)
+        MAP_KEY(std::vector<Node>, nodes)
 
         typedef more::key_value_pack<nodes> type;
 
 
     } // namespace parser
-
-} // namespace basic
+    } // namespace basic
 
 } // namespace topo

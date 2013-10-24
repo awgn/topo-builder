@@ -69,7 +69,8 @@ try
                                                                comment('#')))
                 throw std::runtime_error("parse error in config file!");
 
-            return builder(bt, more::get<topo::basic::parser::nodes>(config));
+            return builder(bt, std::move(
+                                    more::get<topo::basic::parser::nodes>(config)) );
 
         } break;
     default: throw std::runtime_error("internal error");
