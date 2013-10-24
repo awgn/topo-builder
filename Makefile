@@ -4,7 +4,7 @@ CPPFLAGS=-g -std=c++11 -O3 -DNDEBUG -Wall -Wextra -pedantic -I . -I lib
 LDFLAGS=-g 
 LDLIBS=-pthread
 
-SRCS= main.cpp
+SRCS= main.cpp builder.cpp
 
 OBJS=$(subst .cpp,.o,$(SRCS))
 
