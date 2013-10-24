@@ -6,17 +6,26 @@
 #include <network.hpp>
 
 namespace topo {
+                                       
+    enum class parser_type
+    {
+        basic
+    };
+
 
 namespace basic {
 
-    // declare a vector of switching services:
-    //
-    MAP_KEY(std::vector<node>, virtual_routers)
+    namespace parser {
+
+        // declare a vector of switching services:
+        //
+        MAP_KEY(std::vector<node>, nodes)
+
+        typedef more::key_value_pack<nodes> type;
 
 
-    typedef more::key_value_pack<virtual_routers> parser;
+    } // namespace parser
 
-
-} // namespace parser
+} // namespace basic
 
 } // namespace topo
