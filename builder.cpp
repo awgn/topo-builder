@@ -24,35 +24,16 @@ namespace topo
     }
 
 
-    int builder(builder_type t, Topology ns)
-    {
-        switch(t)
-        {
-        case builder_type::script:
-            return builder_script(std::move(ns));
-
-        case builder_type::run:
-            return builder_run(std::move(ns));
-
-        default:
-            throw std::runtime_error("builder: internal error");
-        }
-    }
-
-    int builder_script(Topology ns)
+    int builder(Topology ns)
     {
         auto s = get_switches(ns);
 
-        auto out = make_switches(s);
+        auto out = script::make_switches(s);
 
         std::cout << show (out) << std::endl; 
 
         return 0;
     }
 
-    int builder_run(Topology ns)
-    {
-        return 0;
-    }
 
 } // namespace topo

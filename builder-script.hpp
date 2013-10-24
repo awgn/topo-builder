@@ -6,6 +6,11 @@
 
 namespace topo 
 {
-    std::vector<std::string> make_switches(Switches ss);
+    namespace script
+    {
+        using line = std::string;
+
+        std::vector<line> make_switches(Switches ss);
+    }
 
 } // namespace topo

@@ -25,7 +25,6 @@ try
     const char *config_file = nullptr;
 
     topo::parser_type pt = topo::parser_type::basic;
-    topo::builder_type bt = topo::builder_type::script;
 
     auto is_opt = [](const char *arg, const char *opt, const char *opt2) 
     {
@@ -69,8 +68,7 @@ try
                                                                comment('#')))
                 throw std::runtime_error("parse error in config file!");
 
-            return builder(bt, std::move(
-                                    more::get<topo::basic::parser::nodes>(config)) );
+            return topo::builder(std::move(more::get<topo::basic::parser::nodes>(config)));
 
         } break;
     default: throw std::runtime_error("internal error");
