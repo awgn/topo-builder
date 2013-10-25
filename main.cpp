@@ -8,7 +8,15 @@
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-v|--verbose] [-c|--config file] [--vnc]");
+    throw std::runtime_error(std::string("usage: ") + name + " [OPTIONS]\n\n" 
+          "Options:\n"
+          "   -c, --config file           Specify config file\n"
+          "       --vnc                   Enable vnc for VMs (curses by default)\n"
+          "   -k, --kernel file           Specify the kernel image (default: Core/boot/vmlinuz)\n" 
+          "   -C, --core file             Specify the core file    (default: Core/boot/core.gz)\n" 
+          "General:\n"
+          "   -h, --help                  Display help message\n" 
+          "   -v, --verbose               Verbose mode\n");
 }
 
 
@@ -45,6 +53,28 @@ try
             continue;
         }
         
+        if (is_opt(argv[i], "-k", "--kernel")) 
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("argument missing");
+            }
+
+            global::instance().kernel = argv[i];
+            continue;
+        }
+
+        if (is_opt(argv[i], "-C", "--core")) 
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("argument missing");
+            }
+
+            global::instance().core = argv[i];
+            continue;
+        }
+
         if (is_opt(argv[i], "-v", "--verbose"))
         {
             global::instance().verbose = true;

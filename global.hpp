@@ -8,6 +8,8 @@ class global {
     global()
     : verbose(false)
     , vnc(false)
+    , kernel("Core/boot/vmlinuz")
+    , core("Core/boot/core.gz")
     {}
 
     ~global()
@@ -29,5 +31,8 @@ class global {
 
     bool verbose; 
     bool vnc;
+
+    std::string kernel;
+    std::string core;
 };
 
