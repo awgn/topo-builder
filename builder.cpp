@@ -1,36 +1,80 @@
 #include <builder.hpp>
 #include <builder-script.hpp>
+#include <global.hpp>
+
+#include <show.hpp>
 
 #include <vector>
 #include <string>
 
-
 namespace topo
 {
-    Switches
-    get_switches(Topology const &ns)
+    // given the list of Switch and Node, build the switch map
+    //
+    
+    SwitchMap
+    make_switch_map(Switches const &ss, Nodes const &ns)
     {
-        Switches ret;
+        SwitchMap ret;
+
+        for(auto &s : ss)
+        {
+            ret[s.first] = std::make_tuple(s, 0, 0);
+        }
+
+        // compute the per-switch number of links...
+        //
 
         for(auto &node : ns)
         {
             for(auto &port : node_ports(node))
             {
-                ret[port_link(port)]++;
+                auto it = ret.find(port_linkname(port));
+                if (it == std::end(ret))
+                    throw std::runtime_error("make_switch_map: " + port_linkname(port) + " not found");
+
+                std::get<1>(it->second)++;
             }
+        }
+        
+        // compute the per-switch tap ids...
+        //
+
+        int base = 1;
+
+        for(auto &p : ret)
+        {
+            std::get<2>(p.second) = base;
+            base += std::get<1>(p.second);
         }
 
         return ret;
     }
 
+    //
+    // main builder function...
+    //
 
-    int builder(Topology ns)
+
+    int builder(Switches ss, Nodes ns)
     {
-        auto s = get_switches(ns);
+        auto sm = make_switch_map(ss, ns);
 
-        auto out = script::make_bridges(s);
+        auto br = script::make_bridges(sm);
+        
+        if (global::instance().verbose)
+        {               
+            std::cout << ::show (br) << std::endl; 
 
-        std::cout << show (out) << std::endl; 
+            std::cerr << ::show (sm) << std::endl;
+
+            // for(auto && x : sm)
+            // {
+            //     std::cerr << std::get<0>(x.second).first << ", " << std::get<0>(x.second).second << " => " 
+            //               << std::get<1>(x.second) << " links, index = " << std::get<2>(x.second) << std::endl;
+            // }
+        }
+
 
         return 0;
     }

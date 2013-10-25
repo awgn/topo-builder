@@ -10,7 +10,7 @@ namespace topo
     {
         using line = std::string;
 
-        std::vector<line> make_bridges(Switches ss);
+        std::vector<line> make_bridges(SwitchMap ss);
 
         std::vector<line> make_kvm();
 

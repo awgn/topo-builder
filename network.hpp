@@ -6,9 +6,11 @@
 #include <map>
 
 #include <netaddress.hpp>
+#include <show.hpp>
 
 namespace topo {
 
+    ///////////////////////////////////////////////////////////////////////////
     //  
     //  port: [ "eth0" 192.168.0.1/24 -> vswitch0 ]
     //
@@ -27,11 +29,12 @@ namespace topo {
     }
 
     inline std::string
-    port_link(Port const &p)
+    port_linkname(Port const &p)
     {
         return p.second;
     }
-
+    
+    ///////////////////////////////////////////////////////////////////////////
     //
     // node:  ( "vrouter" "opt1.img"
     //          [
@@ -65,7 +68,7 @@ namespace topo {
         return std::get<2>(n);
     }
 
-
+    ///////////////////////////////////////////////////////////////////////////
     //
     // Switch...
     //
@@ -74,6 +77,7 @@ namespace topo {
     {
         bridge,
         macvtap,
+        macvtap2,
         vale
     };
 
@@ -87,6 +91,8 @@ namespace topo {
             return out << "bridge";
         case switch_type::macvtap:
             return out << "macvtap";
+        case switch_type::macvtap2:
+            return out << "macvtap2";
         case switch_type::vale:
             return out << "vale";
         }
@@ -109,6 +115,10 @@ namespace topo {
         {
             return that = switch_type::macvtap, in;
         }
+        if (s.compare("macvtap2") == 0)
+        {
+            return that = switch_type::macvtap2, in;
+        }
         if (s.compare("vale") == 0)
         {
             return that = switch_type::vale, in;
@@ -116,9 +126,20 @@ namespace topo {
 
         in.setstate(std::ios_base::failbit);         
         return in;
+    }    
+    
+    inline std::string
+    show(const switch_type &st, const char * n = nullptr)
+    {
+        std::string s;
+        if (n) {
+            s += std::string(n) + ' ';
+        }
+        std::ostringstream ss; ss << st;
+        return s + ss.str();
     }
 
-    using Switch = std::pair<std::string, uint32_t>;
+    using Switch = std::pair<std::string, switch_type>;
 
     inline std::string
     node_name(Switch const &s)
@@ -127,19 +148,50 @@ namespace topo {
     }
 
 
-    inline int
-    node_links(Switch const &s)
+    inline switch_type
+    node_type(Switch const &s)
     {
         return s.second;
     }
 
+    using Switches = std::vector<Switch>;
+
+
+    ///////////////////////////////////////////////////////////////////////////
     //
-    // Switches... many Switch, organised in a map
+    // SwitchMap
+
+    using SwitchInfo = std::tuple<Switch, 
+                                  uint32_t,     // num_links
+                                  uint32_t>;    // index;
+
+    inline Switch
+    get_switch(SwitchInfo const &i)
+    {
+        return std::get<0>(i);
+    }
+
+    inline uint32_t
+    get_num_links(SwitchInfo const &i)
+    {
+        return std::get<1>(i);
+    }
+    
+    inline uint32_t
+    get_index(SwitchInfo const &i)
+    {
+        return std::get<1>(i);
+    }
+
+
+    using SwitchMap = std::map<std::string, SwitchInfo>;
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    // Topology 
     //
     
-    using Switches = std::map<std::string, uint32_t>;
-
-
-    using Topology = std::vector<Node>;
+    using Nodes = std::vector<Node>;
 
 } // namespace topo
