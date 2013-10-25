@@ -70,6 +70,54 @@ namespace topo {
     // Switch...
     //
 
+    enum class switch_type
+    {
+        bridge,
+        macvtap,
+        vale
+    };
+
+    template <typename CharT, typename Traits>
+    typename std::basic_ostream<CharT, Traits> &
+    operator<<(std::basic_ostream<CharT,Traits>& out, switch_type const&  that)
+    {
+        switch(that)
+        {
+        case switch_type::bridge:
+            return out << "bridge";
+        case switch_type::macvtap:
+            return out << "macvtap";
+        case switch_type::vale:
+            return out << "vale";
+        }
+        return out;
+    }
+
+    template <typename CharT, typename Traits>
+    typename std::basic_istream<CharT, Traits> &
+    operator>>(std::basic_istream<CharT,Traits>& in, switch_type&  that)
+    {
+        std::string s;
+        if (!(in >> s))
+            return in;
+      
+        if (s.compare("bridge") == 0)
+        {
+            return that = switch_type::bridge, in;
+        }
+        if (s.compare("macvtap") == 0)
+        {
+            return that = switch_type::macvtap, in;
+        }
+        if (s.compare("vale") == 0)
+        {
+            return that = switch_type::vale, in;
+        }
+
+        in.setstate(std::ios_base::failbit);         
+        return in;
+    }
+
     using Switch = std::pair<std::string, uint32_t>;
 
     inline std::string
