@@ -15,22 +15,15 @@ namespace topo {
     //
     
     using Port = std::pair<
-                            std::tuple<std::string,    // id/name
-                                       net::address>   // network_address/mask
+                            net::address                // network_address/mask
                             ,
                             std::string>;              // switch-id
 
 
-    inline std::string 
-    port_name(Port const &p)
-    {
-        return std::get<0>(p.first);
-    }
-    
     inline net::address 
     port_address(Port const &p)
     {
-        return std::get<1>(p.first);
+        return p.first;
     }
 
     inline std::string
