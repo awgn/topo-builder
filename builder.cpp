@@ -61,21 +61,16 @@ namespace topo
         auto sm = make_switch_map(ss, ns);
 
         auto br = script::make_bridges(sm);
+
         
         if (global::instance().verbose)
         {               
-            std::cout << ::show (br) << std::endl; 
+            std::cerr << "switch map: " << ::show (sm) << std::endl;
 
-            std::cerr << ::show (sm) << std::endl;
-
-            // for(auto && x : sm)
-            // {
-            //     std::cerr << std::get<0>(x.second).first << ", " << std::get<0>(x.second).second << " => " 
-            //               << std::get<1>(x.second) << " links, index = " << std::get<2>(x.second) << std::endl;
-            // }
+            std::cerr << "brige setup: " << ::show (br) << std::endl; 
         }
 
-
+        
         return 0;
     }
 
