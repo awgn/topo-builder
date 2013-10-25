@@ -75,8 +75,7 @@ inline namespace more_show {
     // numeric like...
     
     template <typename T> 
-    inline 
-    typename std::enable_if<std::is_arithmetic<T>::value || std::is_enum<T>::value, std::string>::type 
+    inline typename std::enable_if<std::is_arithmetic<T>::value || (std::is_enum<T>::value && std::is_convertible<T,int>::value), std::string>::type 
     show(T const &value, const char * = nullptr);
 
     // manipulators...
@@ -230,7 +229,7 @@ inline namespace more_show {
     // show for arithmetic types..
 
     template <typename T>
-    inline typename std::enable_if<std::is_arithmetic<T>::value || std::is_enum<T>::value, std::string>::type
+    inline typename std::enable_if<std::is_arithmetic<T>::value || (std::is_enum<T>::value && std::is_convertible<T,int>::value), std::string>::type
     show(T const &value, const char * n)
     {
         return show_helper::header<T>(n) + std::to_string(value);
