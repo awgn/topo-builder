@@ -19,7 +19,7 @@ namespace topo
 
         for(auto &s : ss)
         {
-            ret[s.first] = std::make_tuple(s, 0, 0);
+            ret[s.first] = std::make_tuple(s, 0, 0, 0);
         }
 
         // compute the per-switch number of links...
@@ -45,32 +45,96 @@ namespace topo
         for(auto &p : ret)
         {
             std::get<2>(p.second) = base;
-            base += std::get<1>(p.second);
+            std::get<3>(p.second) = get_num_links(p.second);
+            base += get_num_links(p.second);
         }
 
         return ret;
+    }
+
+
+    //
+    // get tap index from SwitchInfo
+    //
+
+    int
+    get_first_tap_avail(SwitchMap &sm, std::string const &name)
+    {
+        auto it = sm.find(name);
+        if (it == std::end(sm))
+            throw std::runtime_error("get_tap_index: switch " + name + " not found");
+
+        auto & info = it->second;
+
+        if (get_avail(info) == 0)
+            throw std::runtime_error("get_tap_index: internal error");
+
+        std::get<3>(info)--;
+        return std::get<2>(info)++;
     }
 
     //
     // main builder function...
     //
 
-
     int builder(Switches ss, Nodes ns)
     {
         auto sm = make_switch_map(ss, ns);
 
-        auto br = script::make_bridges(sm);
-
-        
         if (global::instance().verbose)
         {               
-            std::cerr << "switch map: " << ::show (sm) << std::endl;
+            std::cerr << "switches   : " << ::show (ss) << std::endl;
+            std::cerr << "nodes      : " << ::show (ns) << std::endl;
+        }
+        
+        TapMap tm;
 
-            std::cerr << "brige setup: " << ::show (br) << std::endl; 
+        for(auto &n : ns)
+        {
+            std::vector<int> taps;
+
+            for(auto p : node_ports(n))
+            {
+                auto tap = get_first_tap_avail(sm, port_linkname(p));
+
+                taps.push_back(tap);
+            }
+
+            tm[node_name(n)] = std::move(taps);
         }
 
+        // display maps...
+        //
         
+        if (global::instance().verbose)
+        {
+            std::cerr << "switch_map : " <<  ::show(sm) << std::endl;
+            std::cerr << "tap_map    : " <<  ::show(tm) << std::endl;
+        }
+                 
+        //////////////////////////////////////////////////////////////////
+        //
+        // dump script...
+        //
+        
+        auto br = script::make_bridges(sm);
+
+        std::cout << "\n# make bridges..." << std::endl; script::show(br);
+
+        // dump kvm setup...
+        //
+        
+        auto kvm = script::make_kvm();
+
+        std::cout << "\n# setup kvm" << std::endl; script::show(kvm);
+
+        // dump VMs...
+        //
+        
+        auto vms = script::make_vms(ns, tm);
+
+        std::cout << "\n# start VMs..." << std::endl; script::show(vms);
+
         return 0;
     }
 
