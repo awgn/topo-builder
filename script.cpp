@@ -14,7 +14,7 @@ namespace topo
     namespace
     {
         line
-        make_bridge_cmdline(std::string name,
+        make_bridge_cmdline(std::string const &name,
                             topo::switch_type t,
                             int base,
                             int n_if)
@@ -40,24 +40,35 @@ namespace topo
 
 
         line
-        make_startvm_cmdline(std::string image, bool vnc, int tty, std::string vmlinuz, std::string core, std::vector<int> ts)
+        make_startvm_cmdline(std::string const &image, bool vnc, int tty, 
+                             std::string const &vmlinuz, 
+                             std::string const &core, 
+                             std::vector<int> const &ts)
         {
+            if (ts.empty())
+                throw std::logic_error("make_startvm_cmdline: no taps available");
+            
             std::string tty_opt = vnc ? more::sprint("-v %1", tty) : 
                                         more::sprint("-t %1", tty);
 
-            std::ostringstream tap;
+            std::string tap_opt;
 
-            for(auto t : ts)
+            auto t = std::begin(ts);
+
+            do 
             {
-                tap << "tap" << t << " " << std::endl;
+                tap_opt += "tap" + std::to_string(*t++);
             }
+            while (t != std::end(ts) ? (tap_opt += ' ', true) : false);
 
-            return more::sprint("startmv.sh -k -n %1 -I \"%2\" -o %3 -l %4 -c %5 </dev/zero &>log-%1.txt &",
+            return more::sprint("startmv.sh -k -n %1 -I \"%2\" -o %3 -l %4 -c %5 </dev/zero &>log-%6.txt &",
                                     tty_opt,
-                                    tap.str(),
+                                    tap_opt,
                                     image,
                                     vmlinuz,
-                                    core);
+                                    core,
+                                    tty
+                                    );
         }
     }
 
@@ -74,7 +85,7 @@ namespace topo
 
             ret.push_back( make_bridge_cmdline(node_name(get_switch(s.second)),
                                                node_type(get_switch(s.second)),
-                                                         base, nlink) ); 
+                                               base, nlink) ); 
 
             base += nlink;
         }
@@ -90,16 +101,26 @@ namespace topo
 
         return ret;
     }
-
-
-    std::vector<line> make_vms(SwitchMap const &ss, Nodes const &ns)
+        
+    
+    std::vector<line> make_vms(Nodes const &ns, TapMap const &tm)
     {
         std::vector<line> ret;
 
         for(auto & n : ns)
         {
+            auto & g = global::instance();
 
-            ret.push_back(make_kvm_setup_cmdline());
+            auto t = tm.find(node_name(n));
+            if (t == std::end(tm))
+                throw std::logic_error("make_vms: internal error");
+
+            ret.push_back(make_startvm_cmdline(node_image(n), 
+                                               g.vnc,
+                                               g.index++,
+                                               g.kernel,
+                                               g.core,
+                                               t->second));
         }
 
         return ret;
