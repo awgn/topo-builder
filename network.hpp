@@ -162,8 +162,9 @@ namespace topo {
     // SwitchMap
 
     using SwitchInfo = std::tuple<Switch, 
-                                  uint32_t,     // num_links
-                                  uint32_t>;    // index;
+                                  int,     // num_links
+                                  int,     // index
+                                  int>;    // avail;
 
     inline Switch
     get_switch(SwitchInfo const &i)
@@ -171,21 +172,28 @@ namespace topo {
         return std::get<0>(i);
     }
 
-    inline uint32_t
+    inline int
     get_num_links(SwitchInfo const &i)
     {
         return std::get<1>(i);
     }
     
-    inline uint32_t
+    inline int
     get_index(SwitchInfo const &i)
     {
-        return std::get<1>(i);
+        return std::get<2>(i);
+    }
+    
+    inline int
+    get_avail(SwitchInfo const &i)
+    {
+        return std::get<3>(i);
     }
 
 
     using SwitchMap = std::map<std::string, SwitchInfo>;
 
+    using TapMap    = std::map<std::string, std::vector<int>>;
 
     ///////////////////////////////////////////////////////////////////////////
     //
