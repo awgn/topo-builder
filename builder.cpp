@@ -1,5 +1,5 @@
 #include <builder.hpp>
-#include <builder-script.hpp>
+#include <script.hpp>
 #include <global.hpp>
 
 #include <show.hpp>
