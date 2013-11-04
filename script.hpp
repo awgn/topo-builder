@@ -10,7 +10,7 @@ namespace topo
 {
     namespace script
     {
-        using line = std::string;
+        typedef std::string line;
 
         std::vector<line> make_bridges(SwitchMap ss);
 

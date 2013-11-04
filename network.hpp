@@ -16,10 +16,10 @@ namespace topo {
     //
     //
     
-    using Port = std::pair<
+    typedef std::pair<
                             net::address                // network_address/mask
                             ,
-                            std::string>;              // switch-id
+                            std::string> Port;              // switch-id
 
 
     inline net::address 
@@ -45,10 +45,10 @@ namespace topo {
     //
 
 
-    using Node = std::tuple<std::string,        // id/name
+    typedef std::tuple<std::string,        // id/name
                             std::string,        // image
                             std::vector<Port>>  // port list
-                            ;
+                            Node;
 
     inline std::string 
     node_name(Node const &n)
@@ -139,7 +139,7 @@ namespace topo {
         return s + ss.str();
     }
 
-    using Switch = std::pair<std::string, switch_type>;
+    typedef std::pair<std::string, switch_type> Switch;
 
     inline std::string
     node_name(Switch const &s)
@@ -154,17 +154,17 @@ namespace topo {
         return s.second;
     }
 
-    using Switches = std::vector<Switch>;
+    typedef std::vector<Switch> Switches;
 
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // SwitchMap
 
-    using SwitchInfo = std::tuple<Switch, 
+    typedef std::tuple<Switch, 
                                   int,     // num_links
                                   int,     // index
-                                  int>;    // avail;
+                                  int> SwitchInfo;    // avail;
 
     inline Switch
     get_switch(SwitchInfo const &i)
@@ -191,15 +191,15 @@ namespace topo {
     }
 
 
-    using SwitchMap = std::map<std::string, SwitchInfo>;
+    typedef std::map<std::string, SwitchInfo> SwitchMap;
 
-    using TapMap    = std::map<std::string, std::vector<int>>;
+    typedef std::map<std::string, std::vector<int>> TapMap;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // Topology 
     //
     
-    using Nodes = std::vector<Node>;
+    typedef std::vector<Node> Nodes;
 
 } // namespace topo
