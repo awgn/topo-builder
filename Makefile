@@ -1,10 +1,10 @@
 CXX=g++
 
-CPPFLAGS=-g -std=c++11 -O3 -DNDEBUG -Wall -Wextra -pedantic -I . -I lib   
+CPPFLAGS=-g -std=c++0x -O3 -DNDEBUG -Wall -Wextra -pedantic -I . -I lib   
 LDFLAGS=-g 
 LDLIBS=-pthread
 
-SRCS= main.cpp builder.cpp script.cpp
+SRCS= topo-builder.cpp builder.cpp script.cpp
 
 OBJS=$(subst .cpp,.o,$(SRCS))
 
