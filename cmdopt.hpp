@@ -24,9 +24,9 @@ namespace
 #define OPTION(family, ...) \
     struct family \
     { \
-        static std::map<std::string, std::string> opts; \
+        static std::map<std::string, std::pair<std::string, bool> > opts; \
     }; \
-    std::map<std::string, std::string> family::opts = { __VA_ARGS__ };
+    std::map<std::string, std::pair<std::string, bool> > family::opts = { __VA_ARGS__ };
 
 
 namespace cmd {
@@ -59,11 +59,15 @@ namespace cmd {
         if (it == std::end(Tp::opts))
             throw std::runtime_error("family option '" + demangle(typeid(Tp).name()) + "' : unknown type '" + opt + "'");
 
-        if (!(in >> arg))
-            return in;
-        
-        that.opt = it->second;
-        that.arg = std::move(arg);
+        that.opt = it->second.first;
+
+        if (it->second.second)
+        {
+            if (!(in >> arg))
+                return in;
+
+            that.arg = std::move(arg);
+        }
 
         return in;
     }
@@ -72,8 +76,8 @@ namespace cmd {
 
 /* 
  
-   OPTION(type, { "test", "--test" },
-                { "prova", "-p"    }  
+   OPTION(type, { "test", "--test", true  },
+                { "prova", "-p",    false }  
       )
  */
 
