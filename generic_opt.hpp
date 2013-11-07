@@ -36,21 +36,13 @@ namespace
 // 
 
 
-#define OPTION(family, ...) \
-    struct family \
-    { \
-        static std::map<std::string, std::pair<std::string, bool> > opts; \
-    }; \
-    std::map<std::string, std::pair<std::string, bool> > family::opts = { __VA_ARGS__ };
-
-
 namespace generic {
 
     template <typename Tp>
     struct option 
     {
         std::string opt;
-        std::unique_ptr<std::string> arg;
+        std::vector<std::string> args;
     };
 
     template <typename Tp, typename CharT, typename Traits>
@@ -58,8 +50,8 @@ namespace generic {
     operator<<(std::basic_ostream<CharT,Traits>& out, option<Tp> const& that)
     {
         out << that.opt;
-        if (that.arg)
-            out << ' ' << *that.arg;
+        for(auto const & x : that.args)
+            out << ' ' << x;
         return out;
     }
 
@@ -72,23 +64,49 @@ namespace generic {
         if (!(in >> opt))
             return in;
 
-        auto it = Tp::opts.find(opt);
-        if (it == std::end(Tp::opts))
+        auto it = Tp::options().find(opt);
+        if (it == std::end(Tp::options()))
             throw std::runtime_error("parse error: kind '" + demangle(typeid(Tp).name()) + "' unknown option type " + opt );
 
         that.opt = it->second.first;
-        that.arg.reset();
+        that.args.clear();
 
-        if (it->second.second)
+        for(int i = 0; i < it->second.second; ++i)
         {
             if (!(in >> arg))
                 return in;
 
-            that.arg.reset(new std::string(std::move(arg)));
+            that.args.push_back(std::move(arg));
         }
 
         return in;
     }
+    
+    template <typename Tp>
+    inline std::string
+    show(const option<Tp> &opt, const char * n = nullptr)
+    {
+        std::string s;
+        if (n) {
+            s += std::string(n) + ' ';
+        }
+        std::ostringstream ss; ss << opt;
+        return s + ss.str();
+    }
 
-} // namespace cmd
+
+} // namespace generic 
+
+
+#define OPTION_KIND(family, ...) \
+    struct family \
+    { \
+        static std::map<std::string, std::pair<std::string, int> > & \
+        options() \
+        { \
+            static std::map<std::string, std::pair<std::string, int> > instance = { __VA_ARGS__ }; \
+            return instance; \
+        } \
+    }; \
+    typedef generic::option<family> family ## _type;
 
