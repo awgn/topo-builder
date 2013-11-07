@@ -20,6 +20,19 @@ namespace
     }
 }
 
+// 
+// declare a command line option:
+// 
+// OPTION(type, { "test",  { "--test", true } },
+//              { "prova", { "-p",    false } }  
+//    )
+// 
+// type opt;
+// 
+// std::cin  >> opt;
+// std::cout << opt;
+// 
+
 
 #define OPTION(family, ...) \
     struct family \
@@ -35,15 +48,17 @@ namespace cmd {
     struct option 
     {
         std::string opt;
-        std::string arg;
+        std::unique_ptr<std::string> arg;
     };
-
 
     template <typename Tp, typename CharT, typename Traits>
     typename std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT,Traits>& out, option<Tp> const& that)
     {
-        return out << that.opt << ' ' << that.arg;
+        out << that.opt;
+        if (that.arg)
+            out << ' ' << *that.arg;
+        return out;
     }
 
     template <typename Tp, typename CharT, typename Traits>
@@ -57,27 +72,21 @@ namespace cmd {
 
         auto it = Tp::opts.find(opt);
         if (it == std::end(Tp::opts))
-            throw std::runtime_error("family option '" + demangle(typeid(Tp).name()) + "' : unknown type '" + opt + "'");
+            throw std::runtime_error("parse error: kind '" + demangle(typeid(Tp).name()) + "' unknown option type " + opt );
 
         that.opt = it->second.first;
+        that.arg.reset();
 
         if (it->second.second)
         {
             if (!(in >> arg))
                 return in;
 
-            that.arg = std::move(arg);
+            that.arg.reset(new std::string(std::move(arg)));
         }
 
         return in;
     }
 
-}
-
-/* 
- 
-   OPTION(type, { "test", "--test", true  },
-                { "prova", "-p",    false }  
-      )
- */
+} // namespace cmd
 
