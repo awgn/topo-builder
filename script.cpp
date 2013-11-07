@@ -40,7 +40,8 @@ namespace topo
 
 
         line
-        make_startvm_cmdline(std::string const &image, bool vnc, int tty, 
+        make_startvm_cmdline(opt::image_type const &image, 
+                             opt::term_type const &term,
                              std::string const &vmlinuz, 
                              std::string const &core, 
                              std::vector<int> const &ts)
@@ -48,9 +49,6 @@ namespace topo
             if (ts.empty())
                 throw std::logic_error("make_startvm_cmdline: no taps available");
             
-            std::string tty_opt = vnc ? more::sprint("-v %1", tty) : 
-                                        more::sprint("-t %1", tty);
-
             std::string tap_opt;
 
             auto t = std::begin(ts);
@@ -61,13 +59,13 @@ namespace topo
             }
             while (t != std::end(ts) ? (tap_opt += ' ', true) : false);
 
-            return more::sprint("startmv.sh -k -n %1 -I \"%2\" -o %3 -l %4 -c %5 </dev/zero &>log-%6.txt &",
-                                    tty_opt,
+            return more::sprint("startmv.sh -k -n %1 -I \"%2\" %3 -l %4 -c %5 </dev/zero &>log-%6.txt &",
+                                    term,
                                     tap_opt,
                                     image,
                                     vmlinuz,
                                     core,
-                                    tty
+                                    term.args[0]
                                     );
         }
     }
@@ -115,9 +113,10 @@ namespace topo
             if (t == std::end(tm))
                 throw std::logic_error("make_vms: internal error");
 
+            g.index++;
+
             ret.push_back(make_startvm_cmdline(node_image(n), 
-                                               g.vnc,
-                                               g.index++,
+                                               node_term(n),
                                                g.kernel,
                                                g.core,
                                                t->second));

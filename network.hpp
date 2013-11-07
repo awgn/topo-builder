@@ -8,6 +8,8 @@
 #include <netaddress.hpp>
 #include <show.hpp>
 
+#include <options.hpp>
+
 namespace topo {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -16,10 +18,8 @@ namespace topo {
     //
     //
     
-    typedef std::pair<
-                            net::address                // network_address/mask
-                            ,
-                            std::string> Port;              // switch-id
+    typedef std::pair< net::address                // network_address/mask
+                     , std::string> Port;          // switch-id
 
 
     inline net::address 
@@ -45,10 +45,11 @@ namespace topo {
     //
 
 
-    typedef std::tuple<std::string,        // id/name
-                            std::string,        // image
-                            std::vector<Port>>  // port list
-                            Node;
+    typedef std::tuple<std::string,         // id/name
+                       opt::image_type,     // image
+                       opt::term_type,      // term
+                       std::vector<Port>>   // port list
+                       Node;
 
     inline std::string 
     node_name(Node const &n)
@@ -56,16 +57,22 @@ namespace topo {
         return std::get<0>(n);
     }
     
-    inline std::string 
+    inline opt::image_type
     node_image(Node const &n)
     {
         return std::get<1>(n);
+    }
+    
+    inline opt::term_type
+    node_term(Node const &n)
+    {
+        return std::get<2>(n);
     }
 
     inline std::vector<Port>
     node_ports(Node const &n)
     {
-        return std::get<2>(n);
+        return std::get<3>(n);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -162,9 +169,9 @@ namespace topo {
     // SwitchMap
 
     typedef std::tuple<Switch, 
-                                  int,     // num_links
-                                  int,     // index
-                                  int> SwitchInfo;    // avail;
+                       int,                  // num_links
+                       int,                  // index
+                       int> SwitchInfo;      // avail;
 
     inline Switch
     get_switch(SwitchInfo const &i)
