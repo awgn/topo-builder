@@ -12,7 +12,6 @@ namespace topo {
         basic
     };
 
-
     namespace basic {
     namespace parser {
 
