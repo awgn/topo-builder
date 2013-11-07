@@ -1,3 +1,5 @@
+#pragma once 
+
 #include <map>
 #include <string>
 #include <memory>
@@ -42,7 +44,7 @@ namespace
     std::map<std::string, std::pair<std::string, bool> > family::opts = { __VA_ARGS__ };
 
 
-namespace cmd {
+namespace generic {
 
     template <typename Tp>
     struct option 
