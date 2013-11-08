@@ -429,7 +429,7 @@ namespace more {
         {
             static_assert(more::traits::has_extraction_operator<T>::value, "parse_lexeme: *** T must have a valid extraction operator>> ***");
             
-            typename std::remove_const<T>::type e;
+            typename std::remove_const<T>::type e{};
 
             if(m_in >> e)
                 lex = std::move(e);

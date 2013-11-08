@@ -178,8 +178,7 @@ namespace net {
         char buf[16] = { '\0' };
         inet_ntop(AF_INET, &addr, buf, sizeof(buf));
 
-        return addr.prefix() == 32 ? s + std::string(buf) :
-                                     s + std::string(buf) + '/' + std::to_string(addr.prefix());
+        return s + std::string(buf) + '/' + std::to_string(addr.prefix());
     }
 
     template <typename CharT, typename Traits>
