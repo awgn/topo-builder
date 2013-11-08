@@ -9,9 +9,9 @@
 void usage(const char *name)
 {
     throw std::runtime_error(std::string("usage: ") + name + " [OPTIONS]\n\n" 
-          "Options:\n"
+          "VM options:\n"
           "   -c, --config file           Specify config file\n"
-          "       --vnc                   Enable vnc for VMs (curses by default)\n"
+          "   -i, --append-ip             Pass IP address to guest kernel image\n"
           "   -k, --kernel file           Specify the kernel image (default: Core/boot/vmlinuz)\n" 
           "   -C, --core file             Specify the core file    (default: Core/boot/core.gz)\n" 
           "General:\n"
@@ -81,9 +81,9 @@ try
             continue;
         }
 
-        if (is_opt(argv[i], nullptr, "--vnc"))
+        if (is_opt(argv[i], "-i", "--append-ip"))
         {
-            global::instance().vnc = true;
+            global::instance().append_ip = true;
             continue;
         }
 

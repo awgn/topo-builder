@@ -42,6 +42,7 @@ namespace topo
         line
         make_startvm_cmdline(opt::image_type const &image, 
                              opt::term_type const &term,
+                             std::vector<Port> const &ports,
                              std::string const &vmlinuz, 
                              std::string const &core, 
                              std::vector<int> const &ts)
@@ -59,13 +60,38 @@ namespace topo
             }
             while (t != std::end(ts) ? (tap_opt += ' ', true) : false);
 
-            return more::sprint("startmv.sh -k -n %1 -I \"%2\" %3 -l %4 -c %5 </dev/zero &>log-%6.txt &",
+            // append extra flags to guest kernel...
+            //
+            
+            std::string append;
+            if (global::instance().append_ip && !ports.empty())
+            {
+                append += "-a ifaces=";
+
+                auto it = std::begin(ports);
+                auto it_e = std::end(ports);
+                
+                int n = 0;
+
+                do 
+                {
+                    append += "eth" + std::to_string(n) + "-" +  show(it->first); 
+                    ++it; ++n;
+                }
+                while([&]() -> bool 
+                {
+                    return it != it_e ? (append += ",", true) : false;
+                }()); 
+            }
+
+            return more::sprint("startmv.sh -k -n %1 -I \"%2\" %3 -l %4 -c %5 %7 </dev/zero &>log-%6.txt &",
                                     term,
                                     tap_opt,
                                     image,
                                     vmlinuz,
                                     core,
-                                    term.args[0]
+                                    term.args[0],
+                                    append
                                     );
         }
     }
@@ -104,11 +130,11 @@ namespace topo
     std::vector<line> make_vms(Nodes const &ns, TapMap const &tm)
     {
         std::vector<line> ret;
+            
+        auto & g = global::instance();
 
         for(auto & n : ns)
         {
-            auto & g = global::instance();
-
             auto t = tm.find(node_name(n));
             if (t == std::end(tm))
                 throw std::logic_error("make_vms: internal error");
@@ -117,6 +143,7 @@ namespace topo
 
             ret.push_back(make_startvm_cmdline(node_image(n), 
                                                node_term(n),
+                                               node_ports(n),
                                                g.kernel,
                                                g.core,
                                                t->second));
