@@ -5,6 +5,8 @@
 #include <memory>
 #include <stdexcept>
 #include <iostream>
+#include <vector>
+#include <sstream>
 
 #include <cxxabi.h>
 
