@@ -1,16 +1,16 @@
-#include <cmdopt.hpp>
+#include <generic_opt.hpp>
 
 namespace opt 
 {
-    OPTION(image, { "type", { "--type", true  } },
-                  { "help", { "-h",     false } }  
+    OPTION_KIND(image,  { "type", { "--type", true  } },
+                        { "help", { "-h",     false } }  
         )
 }
 
 int
 main(int argc, char *argv[])
 {
-    cmd::option<opt::image> o;
+    generic::option<opt::image> o;
 
     std::cin >> o;
 
