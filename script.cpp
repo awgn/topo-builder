@@ -54,13 +54,14 @@ namespace topo
 
 
         line
-        make_startvm_cmdline(opt::image_type    const &image, 
-                             opt::term_type     const &term,
+        make_startvm_cmdline(opt::Image         const &image, 
+                             opt::Term          const &term,
                              std::vector<Port>  const &ports,
-                             opt::gateway_type  const &gateway,
+                             opt::Gateway       const &gateway,
                              std::string        const &vmlinuz, 
                              std::string        const &core, 
-                             std::vector<int>   const &ts)
+                             std::vector<int>   const &ts,
+                             int id)
         {
             if (ts.empty())
                 throw std::logic_error("make_startvm_cmdline: no taps available");
@@ -102,9 +103,9 @@ namespace topo
                 // eventualy add the default gw if specified...
                 //
                 
-                if (gateway.ctor == "defaultgw")
+                if (gateway.type() == opt::Gateway::defaultgw) 
                 {
-                    append_opt += " gw=" + gateway.args.at(0) + " norute";
+                    append_opt += " gw=" + std::get<0>(gateway.arg_as<std::string>()) + " norute";
                 }
                 
                 append_opt += "\"";
@@ -119,7 +120,7 @@ namespace topo
                                     image_opt,
                                     vmlinuz,
                                     core,
-                                    term.args[0],
+                                    id,
                                     append_opt
                                     );
         }
@@ -176,7 +177,8 @@ namespace topo
                                                node_gateway(n),
                                                g.kernel,
                                                g.core,
-                                               t->second));
+                                               t->second,
+                                               g.index));
         }
 
         return ret;

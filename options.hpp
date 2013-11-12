@@ -4,49 +4,52 @@
 
 namespace opt {
 
-    GENERIC_TYPE(image, { "image",  1 },
-                        { "qcow" ,  1 })
+    GENERIC_TYPE(Image, ( image,  std::string),
+                        ( qcow ,  std::string)  )
+
+    // specialized show...
+    //
+    
+    inline 
+    std::string show(Image const &o)
+    {
+        switch(o.type())
+        {
+        case Image::image:
+            return "-o " + std::get<0>(o.arg_as<std::string>());
+
+        case Image::qcow:
+            return "-q " + std::get<0>(o.arg_as<std::string>());
+                          
+        case Image::unknown:
+            throw std::runtime_error("show: internal error");
+        }
+    }
+
+    GENERIC_TYPE(Term, ( tty,  int ),
+                       ( vnc , int ))
 
     // specialized show...
     //
     inline 
-    std::string show(image_type const &o)
+    std::string show(Term const &o)
     {
-        if(o.ctor == "image")
+        switch(o.type())
         {
-            return "-o " + o.args.at(0);    
-        }
-        if(o.ctor == "qcow")
-        {
-            return "-q " + o.args.at(0);    
-        }
+        case Term::tty:
+            return "-t " + std::to_string(std::get<0>(o.arg_as<int>()));
 
-        throw std::logic_error("internal error");
-    }
+        case Term::vnc:
+            return "-v " + std::to_string(std::get<0>(o.arg_as<int>()));
 
-    GENERIC_TYPE(term, { "tty",  1 },
-                       { "vnc" , 1 })
-
-    // specialized show...
-    //
-    inline 
-    std::string show(term_type const &o)
-    {
-        if(o.ctor == "tty")
-        {
-            return "-t " + o.args.at(0);    
+        case Image::unknown:
+            throw std::runtime_error("show: internal error");
         }
-        if(o.ctor == "vnc")
-        {
-            return "-v " + o.args.at(0);    
-        }
-
-        throw std::logic_error("internal error");
     }
 
 
-    GENERIC_TYPE(gateway, { "nodefaultgw",  0 },
-                          { "defaultgw",    1 })
+    GENERIC_TYPE(Gateway, ( nodefaultgw ) ,
+                          ( defaultgw, std::string) )
 
 
 } // namespace opt

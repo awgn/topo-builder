@@ -47,10 +47,10 @@ namespace topo {
 
 
     typedef std::tuple<std::string,         // id/name
-                       opt::image_type,     // image
-                       opt::term_type,      // term
+                       opt::Image,          // image
+                       opt::Term,           // term
                        std::vector<Port>,   // interfaces
-                       opt::gateway_type>   // gateway
+                       opt::Gateway>        // gateway
                        Node;
 
     inline std::string 
@@ -59,13 +59,13 @@ namespace topo {
         return std::get<0>(n);
     }
     
-    inline opt::image_type
+    inline opt::Image
     node_image(Node const &n)
     {
         return std::get<1>(n);
     }
     
-    inline opt::term_type
+    inline opt::Term
     node_term(Node const &n)
     {
         return std::get<2>(n);
@@ -77,7 +77,7 @@ namespace topo {
         return std::get<3>(n);
     }
 
-    inline opt::gateway_type
+    inline opt::Gateway
     node_gateway(Node const &n)
     {
         return std::get<4>(n);
