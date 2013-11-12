@@ -1,23 +1,50 @@
 #pragma once
 
-#include <generic_opt.hpp>
+#include <generic_type.hpp>
 
 namespace opt {
 
-    // option<image>:
+    GENERIC_TYPE(image, { "image",  1 },
+                        { "qcow" ,  1 })
+
+    // specialized show...
     //
-    // image opt1.img or
-    // qcow  opt1.img
+    inline 
+    std::string show(image_type const &o)
+    {
+        if(o.ctor == "image")
+        {
+            return "-o " + o.args.at(0);    
+        }
+        if(o.ctor == "qcow")
+        {
+            return "-q " + o.args.at(0);    
+        }
+
+        throw std::logic_error("internal error");
+    }
+
+    GENERIC_TYPE(term, { "tty",  1 },
+                       { "vnc" , 1 })
+
+    // specialized show...
     //
-    
-    OPTION_KIND(image, { "image", { "-o", 1 } },
-                       { "qcow" , { "-q", 1 } }
-           )
+    inline 
+    std::string show(term_type const &o)
+    {
+        if(o.ctor == "tty")
+        {
+            return "-t " + o.args.at(0);    
+        }
+        if(o.ctor == "vnc")
+        {
+            return "-v " + o.args.at(0);    
+        }
+
+        throw std::logic_error("internal error");
+    }
 
 
-    OPTION_KIND(term, { "tty",    { "-t", 1 } },
-                      { "vnc" ,   { "-v", 1 } }
-           )
 
 
 } // namespace opt

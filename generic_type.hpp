@@ -24,56 +24,42 @@ namespace
     }
 }
 
-// 
-// declare a command line option:
-// 
-// OPTION(type, { "test",  { "--test", true } },
-//              { "prova", { "-p",    false } }  
-//    )
-// 
-// type opt;
-// 
-// std::cin  >> opt;
-// std::cout << opt;
-// 
-
-
 namespace generic {
 
     template <typename Tp>
-    struct option 
+    struct type 
     {
-        std::string opt;
+        std::string ctor;
         std::vector<std::string> args;
     };
 
     template <typename Tp, typename CharT, typename Traits>
     typename std::basic_ostream<CharT, Traits> &
-    operator<<(std::basic_ostream<CharT,Traits>& out, option<Tp> const& that)
+    operator<<(std::basic_ostream<CharT,Traits>& out, type<Tp> const& that)
     {
-        out << that.opt;
-        for(auto const & x : that.args)
-            out << ' ' << x;
+        out << that.ctor;
+        for(auto const & a : that.args)
+            out << ' ' << a;
         return out;
     }
 
     template <typename Tp, typename CharT, typename Traits>
     typename std::basic_istream<CharT, Traits> &
-    operator>>(std::basic_istream<CharT,Traits>& in, option<Tp>&  that)
+    operator>>(std::basic_istream<CharT,Traits>& in, type<Tp>&  that)
     {
-        std::string opt, arg;
+        std::string ctor, arg;
 
-        if (!(in >> opt))
+        if (!(in >> ctor))
             return in;
 
-        auto it = Tp::options().find(opt);
-        if (it == std::end(Tp::options()))
-            throw std::runtime_error("parse error: kind '" + demangle(typeid(Tp).name()) + "' unknown option type " + opt );
+        auto it = Tp::ctors().find(ctor);
+        if (it == std::end(Tp::ctors()))
+            throw std::runtime_error("parse error: type '" + demangle(typeid(Tp).name()) + "' unknown constructor " + ctor);
 
-        that.opt = it->second.first;
+        that.ctor = ctor;
         that.args.clear();
 
-        for(int i = 0; i < it->second.second; ++i)
+        for(int i = 0; i < it->second; ++i)
         {
             if (!(in >> arg))
                 return in;
@@ -86,7 +72,7 @@ namespace generic {
     
     template <typename Tp>
     inline std::string
-    show(const option<Tp> &opt, const char * n = nullptr)
+    show(const type<Tp> &opt, const char * n = nullptr)
     {
         std::string s;
         if (n) {
@@ -96,19 +82,18 @@ namespace generic {
         return s + ss.str();
     }
 
-
 } // namespace generic 
 
 
-#define OPTION_KIND(family, ...) \
+#define GENERIC_TYPE(family, ...) \
     struct family \
     { \
-        static std::map<std::string, std::pair<std::string, int> > & \
-        options() \
+        static std::map<std::string, int> & \
+        ctors() \
         { \
-            static std::map<std::string, std::pair<std::string, int> > instance = { __VA_ARGS__ }; \
+            static std::map<std::string, int> instance = { __VA_ARGS__ }; \
             return instance; \
         } \
     }; \
-    typedef generic::option<family> family ## _type;
+    typedef generic::type<family> family ## _type;
 
