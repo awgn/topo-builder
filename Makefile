@@ -1,6 +1,6 @@
 CXX=g++
 
-CPPFLAGS=-g -std=c++0x -O3 -DNDEBUG -Wall -pedantic -I . -I lib   
+CPPFLAGS=-g -std=c++0x -O3 -DNDEBUG -Wall -Wextra -I . -I lib   
 LDFLAGS=-g 
 LDLIBS=-pthread
 
