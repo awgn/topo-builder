@@ -41,6 +41,7 @@ namespace topo {
     //              [ "eth0" 192.168.0.1/24 -> vswitch0 ]
     //              [ "eth1" 192.168.1.1/24 -> vswitch1 ]
     //          ]
+    //          gateway 192.168.0.100
     //        )
     //
 
@@ -49,6 +50,7 @@ namespace topo {
                        opt::image_type,     // image
                        opt::term_type,      // term
                        std::vector<Port>,   // interfaces
+                       opt::gateway_type>   // gateway
                        Node;
 
     inline std::string 
@@ -73,6 +75,12 @@ namespace topo {
     node_ports(Node const &n)
     {
         return std::get<3>(n);
+    }
+
+    inline opt::gateway_type
+    node_gateway(Node const &n)
+    {
+        return std::get<4>(n);
     }
 
     ///////////////////////////////////////////////////////////////////////////

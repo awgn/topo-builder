@@ -54,12 +54,13 @@ namespace topo
 
 
         line
-        make_startvm_cmdline(opt::image_type const &image, 
-                             opt::term_type const &term,
-                             std::vector<Port> const &ports,
-                             std::string const &vmlinuz, 
-                             std::string const &core, 
-                             std::vector<int> const &ts)
+        make_startvm_cmdline(opt::image_type    const &image, 
+                             opt::term_type     const &term,
+                             std::vector<Port>  const &ports,
+                             opt::gateway_type  const &gateway,
+                             std::string        const &vmlinuz, 
+                             std::string        const &core, 
+                             std::vector<int>   const &ts)
         {
             if (ts.empty())
                 throw std::logic_error("make_startvm_cmdline: no taps available");
@@ -97,6 +98,14 @@ namespace topo
                 {
                     return it != it_e ? (append_opt += ",", true) : false;
                 }()); 
+
+                // eventualy add the default gw if specified...
+                //
+                
+                if (gateway.ctor == "defaultgw")
+                {
+                    append_opt += " gw=" + gateway.args.at(0) + " norute";
+                }
                 
                 append_opt += "\"";
             }
@@ -164,6 +173,7 @@ namespace topo
             ret.push_back(make_startvm_cmdline(node_image(n), 
                                                node_term(n),
                                                node_ports(n),
+                                               node_gateway(n),
                                                g.kernel,
                                                g.core,
                                                t->second));

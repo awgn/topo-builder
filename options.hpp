@@ -45,6 +45,8 @@ namespace opt {
     }
 
 
+    GENERIC_TYPE(gateway, { "nodefaultgw",  0 },
+                          { "defaultgw",    1 })
 
 
 } // namespace opt
