@@ -74,6 +74,18 @@ namespace net {
             return mask_;
         }
 
+        ipv4_t
+        addr_ip() const
+        {
+            return ipv4_t {addr_.s_addr};
+        }
+        
+        ipv4_t
+        mask_ip() const
+        {
+            return ipv4_t {mask_.s_addr};
+        }
+
         size_t
         prefix() const
         {
