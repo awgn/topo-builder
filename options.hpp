@@ -53,7 +53,7 @@ namespace opt {
 
 
     GENERIC_TYPE(Gateway, ( nodefaultgw ) ,
-                          ( defaultgw, std::string) )
+                          ( defaultgw, net::address ) )
 
 
 } // namespace opt
