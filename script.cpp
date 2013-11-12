@@ -37,6 +37,20 @@ namespace topo
         {
             return "setkvm.sh";
         }
+     
+        inline std::string
+        show_alternate(const net::address &addr)
+        {
+            std::string s;
+            
+            char buf [16] = { '\0' };
+            char mask[16] = { '\0' };
+
+            inet_ntop(AF_INET, &addr.addr(), buf,  sizeof(buf));
+            inet_ntop(AF_INET, &addr.mask(), mask, sizeof(mask)); 
+
+            return s + std::string(buf) + 'm' + std::string(mask);
+        }
 
 
         line
@@ -75,7 +89,7 @@ namespace topo
 
                 do 
                 {
-                    append += "eth" + std::to_string(n) + "-" +  show(it->first); 
+                    append += "eth" + std::to_string(n) + "-" +  show_alternate(it->first); 
                     ++it; ++n;
                 }
                 while([&]() -> bool 
