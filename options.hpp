@@ -24,6 +24,8 @@ namespace opt {
         case Image::unknown:
             throw std::runtime_error("show: internal error");
         }
+
+        return "";
     }
 
     GENERIC_TYPE(Term, ( tty,  int ),
@@ -45,6 +47,8 @@ namespace opt {
         case Image::unknown:
             throw std::runtime_error("show: internal error");
         }
+        
+        return "";
     }
 
 
