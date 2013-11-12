@@ -78,7 +78,7 @@ namespace topo
             //
             
             std::string append;
-            if (global::instance().append_ip && !ports.empty())
+            if (global::instance().append_netinfo && !ports.empty())
             {
                 append += "-a ifaces=";
 

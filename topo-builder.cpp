@@ -11,12 +11,12 @@ void usage(const char *name)
     throw std::runtime_error(std::string("usage: ") + name + " [OPTIONS]\n\n" 
           "VM options:\n"
           "   -c, --config file           Specify config file\n"
-          "   -i, --append-ip             Pass IP address to guest kernel image\n"
+          "   -a, --append-netinfo        Pass ip address, mask and gw to guest kernel image\n"
           "   -k, --kernel file           Specify the kernel image (default: Core/boot/vmlinuz)\n" 
           "   -C, --core file             Specify the core file    (default: Core/boot/core.gz)\n" 
           "General:\n"
           "   -h, --help                  Display help message\n" 
-          "   -v, --verbose               Verbose mode\n");
+          "   -v, --verbose               Verbose mode");
 }
 
 
@@ -81,14 +81,16 @@ try
             continue;
         }
 
-        if (is_opt(argv[i], "-i", "--append-ip"))
+        if (is_opt(argv[i], "-a", "--append-netinfo"))
         {
-            global::instance().append_ip = true;
+            global::instance().append_netinfo = true;
             continue;
         }
 
         if (is_opt(argv[i], "-h", "--help"))
             usage(argv[0]);
+
+        throw std::runtime_error(argv[i] + std::string(": unknown option"));
     }
 
     if (!config_file)

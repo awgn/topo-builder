@@ -7,7 +7,7 @@ class global {
 
     global()
     : verbose(false)
-    , append_ip(false)
+    , append_netinfo(false)
     , index(2)
     , kernel("Core/boot/vmlinuz")
     , core("Core/boot/core.gz")
@@ -31,7 +31,7 @@ class global {
     }
 
     bool verbose; 
-    bool append_ip;
+    bool append_netinfo;
     int index;
 
     std::string kernel;
