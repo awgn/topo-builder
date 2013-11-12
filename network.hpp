@@ -36,7 +36,7 @@ namespace topo {
     
     ///////////////////////////////////////////////////////////////////////////
     //
-    // node:  ( "vrouter" "opt1.img"
+    // node:  ( "vrouter" image "opt1.img" tty 2
     //          [
     //              [ "eth0" 192.168.0.1/24 -> vswitch0 ]
     //              [ "eth1" 192.168.1.1/24 -> vswitch1 ]
@@ -48,7 +48,7 @@ namespace topo {
     typedef std::tuple<std::string,         // id/name
                        opt::image_type,     // image
                        opt::term_type,      // term
-                       std::vector<Port>>   // port list
+                       std::vector<Port>,   // interfaces
                        Node;
 
     inline std::string 

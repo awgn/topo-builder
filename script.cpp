@@ -77,10 +77,11 @@ namespace topo
             // append extra flags to guest kernel...
             //
             
-            std::string append;
+            std::string append_opt;
+
             if (global::instance().append_netinfo && !ports.empty())
             {
-                append += "-a ifaces=";
+                append_opt += "-a \"ifaces=";
 
                 auto it = std::begin(ports);
                 auto it_e = std::end(ports);
@@ -89,23 +90,28 @@ namespace topo
 
                 do 
                 {
-                    append += "eth" + std::to_string(n) + "-" +  show_alternate(it->first); 
+                    append_opt += "eth" + std::to_string(n) + "-" +  show_alternate(it->first); 
                     ++it; ++n;
                 }
                 while([&]() -> bool 
                 {
-                    return it != it_e ? (append += ",", true) : false;
+                    return it != it_e ? (append_opt += ",", true) : false;
                 }()); 
+                
+                append_opt += "\"";
             }
 
+            auto image_opt = opt::show(image);
+            auto term_opt = opt::show(term);
+
             return more::sprint("startmv.sh -k -n %1 -I \"%2\" %3 -l %4 -c %5 %7 </dev/zero &>log-%6.txt &",
-                                    term,
+                                    term_opt,
                                     tap_opt,
-                                    image,
+                                    image_opt,
                                     vmlinuz,
                                     core,
                                     term.args[0],
-                                    append
+                                    append_opt
                                     );
         }
     }
