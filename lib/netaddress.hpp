@@ -176,7 +176,7 @@ namespace net {
             s += std::string(n) + ' ';
         }
         char buf[16] = { '\0' };
-        inet_ntop(AF_INET, &addr, buf, sizeof(buf));
+        inet_ntop(AF_INET, &addr.addr(), buf, sizeof(buf));
 
         return s + std::string(buf) + '/' + std::to_string(addr.prefix());
     }
