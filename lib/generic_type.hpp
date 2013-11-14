@@ -39,52 +39,62 @@ namespace generic {
             return std::string(ret.get());
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    struct base_args
+    { 
+        virtual ~base_args() { }; 
+    };
 
+    template <typename ...Ts>
+    struct args_pack : public base_args
+    {
+        std::tuple<Ts...> value;
+    };
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     template <typename Tp>
     struct base_type 
     {
+        template <typename Typ, typename CharT, typename Traits>
+        friend typename std::basic_ostream<CharT, Traits> &
+        operator<<(std::basic_ostream<CharT,Traits>& out, base_type<Typ> const& that);
+    
+        template <typename Typ, typename CharT, typename Traits>
+        friend typename std::basic_istream<CharT, Traits> &
+        operator>>(std::basic_istream<CharT,Traits>& in, base_type<Typ>&  that);
+
     private:
+
         std::string ctor_;
+        std::shared_ptr<generic::base_args> args_;
 
     public:
 
-        std::string ctor() const
-        {
-            return ctor_;
-        }
+        virtual ~base_type() {}
 
-        void ctor(std::string name)
-        {
-            ctor_ = std::move(name);
-        }
-    
-        virtual void type(const std::string &) = 0;
+        virtual void type(std::string const &t) = 0;
 
         template <typename ... Ts>
         std::tuple<Ts...> &
-        arg_as()
+        data_as()
         {
-            std::tuple<Ts...> ret;
+            if (ctor_.empty())    
+                throw std::logic_error("object not constructed");
 
-            auto it = Tp::ctors_map().find(ctor_);
-            if (it == std::end(Tp::ctors_map()))
-                throw std::logic_error("internal error");
-
-           return * reinterpret_cast<std::tuple<Ts...> *>(it->second->args());
+            return dynamic_cast<args_pack<Ts...> &>(*args_).value;
         }
 
         template <typename ... Ts>
         std::tuple<Ts...> const &
-        arg_as() const
+        data_as() const
         {
-            std::tuple<Ts...> ret;
-
-            auto it = Tp::ctors_map().find(ctor_);
-            if (it == std::end(Tp::ctors_map()))
-                throw std::logic_error("internal error");
-
-           return * reinterpret_cast<std::tuple<Ts...> *>(it->second->args());
+            if (ctor_.empty())    
+                throw std::logic_error("object not constructed");
+            
+            return dynamic_cast<args_pack<Ts...> const &>(*args_).value;
         }
     };
 
@@ -93,35 +103,35 @@ namespace generic {
     typename std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT,Traits>& out, base_type<Tp> const& that)
     {
-        out << that.ctor();
+        auto it = Tp::visitor_map().find(that.ctor_);
+        if (it == std::end(Tp::visitor_map()))
+            throw std::runtime_error(demangle(typeid(Tp).name()) + ": " + that.ctor_ + " unknown constructor");
+
+        out << that.ctor_;
         
-        auto & exec = Tp::ctors_map()[that.ctor()];
-        if (exec)
-            exec->show(that.ctor(), out);
+        it->second->show(that.ctor_, out, that.args_);
 
         return out;
     }
-
 
     template <typename Tp, typename CharT, typename Traits>
     typename std::basic_istream<CharT, Traits> &
     operator>>(std::basic_istream<CharT,Traits>& in, base_type<Tp>&  that)
     {
-        std::string ctor_, arg_;
+        std::string ctor_;
 
         if (!(in >> ctor_))
             return in;
 
-        auto it = Tp::ctors_map().find(ctor_);
-        if (it == std::end(Tp::ctors_map()))
-            throw std::runtime_error(demangle(typeid(Tp).name()) + ": parse error: " + ctor_ + " unknown constructor");
+        auto it = Tp::visitor_map().find(ctor_);
+        if (it == std::end(Tp::visitor_map()))
+            throw std::runtime_error(demangle(typeid(Tp).name()) + ": " + ctor_ + " unknown constructor");
 
-        that.ctor(ctor_);
         that.type(ctor_);
 
-        auto & exec = Tp::ctors_map()[ctor_];
-        if (exec)
-            exec->read(ctor_, in);
+        it->second->read(ctor_, in, that.args_);
+        
+        that.ctor_ = std::move(ctor_);
 
         return in;
     }
@@ -138,17 +148,17 @@ namespace generic {
         return s + ss.str();
     }
 
-
-    struct base_arg
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    struct base_visitor
     {
-        virtual void read(std::string const &base_type, std::istream &stream) = 0;
-        virtual void show(std::string const &base_type, std::ostream &stream) = 0;
-        virtual void *args() = 0;
+        virtual void read(std::string const &base_type, std::istream &stream, std::shared_ptr<base_args> &) = 0;
+        virtual void show(std::string const &base_type, std::ostream &stream, std::shared_ptr<base_args> const &) = 0;
     };
 
 
     template <typename ... Ts>
-    struct _arg : public base_arg
+    struct visitor : public base_visitor
     {
         struct read_on
         {
@@ -185,53 +195,48 @@ namespace generic {
             }
         };
 
-        virtual void read(std::string const &type, std::istream &in)
+        virtual void read(std::string const &type, std::istream &in, std::shared_ptr<base_args> &args)
         {
-            more::tuple_for_each(pack_, read_on(type, in));
+            auto sp = std::make_shared<args_pack<Ts...>>();
+
+            more::tuple_for_each(sp->value, read_on(type, in));
+            
+            args = std::move(sp);
         }
 
-        virtual void show(std::string const &type, std::ostream &out)
+        virtual void show(std::string const &type, std::ostream &out, std::shared_ptr<base_args> const &args)
         {
-            more::tuple_for_each(pack_, show_on(type, out));
+            auto t = dynamic_cast<args_pack<Ts...> const &>(*args).value;
+            more::tuple_for_each(t, show_on(type, out));
         }
     
-        virtual void *args() 
-        {
-            return static_cast<void *>(&pack_);
-        }
-
-        std::tuple<Ts...> pack_;
     };
-
-
-    template <typename ... Ts>
-    std::shared_ptr<_arg<Ts...>>
-    arg()
-    {
-        return std::make_shared<_arg<Ts...>>();
-    }
 
 } // namespace generic 
 
 
-#define GENERIC_GET_CTOR(x, ...)   x
-#define GENERIC_GET_CSTR(x, ...)    #x
-#define GENERIC_GET_PAIR(x, ...)   { #x, generic::arg<__VA_ARGS__>() }
-
+#define GENERIC_GET_CTOR(x, ...)     x
+#define GENERIC_GET_CSTR(x, ...)     #x
+#define GENERIC_GET_PAIR(x, ...)   { #x, std::make_shared<generic::visitor<__VA_ARGS__>>() }
 
 #define GENERIC_TYPE(T, ...) \
     struct T ## _type \
     { \
-        static std::map<std::string, std::shared_ptr<generic::base_arg>> & \
-        ctors_map() \
+        static std::map<std::string, std::shared_ptr<generic::base_visitor>> & \
+        visitor_map() \
         { \
-            static std::map<std::string, std::shared_ptr<generic::base_arg>> instance = { FOR_EACH(GENERIC_GET_PAIR, __VA_ARGS__) }; \
+            static std::map<std::string, std::shared_ptr<generic::base_visitor>> instance = { FOR_EACH(GENERIC_GET_PAIR, __VA_ARGS__) }; \
             return instance; \
         } \
     }; \
+    \
     struct T : generic::base_type<T ## _type> \
     { \
         enum type_ctor { unknown, FOR_EACH(GENERIC_GET_CTOR,__VA_ARGS__) }; \
+        \
+        T() \
+        : type_(unknown) \
+        {} \
         \
         type_ctor type() const \
         { \
