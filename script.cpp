@@ -105,7 +105,7 @@ namespace topo
                 
                 if (gateway.type() == opt::Gateway::defaultgw) 
                 {
-                    auto a = std::get<0>(gateway.arg_as<net::address>());
+                    auto a = std::get<0>(gateway.data_as<net::address>());
                     append_opt += " gw=" + show(a.addr_ip()) + " norute";
                 }
                 

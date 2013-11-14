@@ -16,10 +16,10 @@ namespace opt {
         switch(o.type())
         {
         case Image::image:
-            return "-o " + std::get<0>(o.arg_as<std::string>());
+            return "-o " + std::get<0>(o.data_as<std::string>());
 
         case Image::qcow:
-            return "-q " + std::get<0>(o.arg_as<std::string>());
+            return "-q " + std::get<0>(o.data_as<std::string>());
                           
         case Image::unknown:
             throw std::runtime_error("show: internal error");
@@ -39,10 +39,10 @@ namespace opt {
         switch(o.type())
         {
         case Term::tty:
-            return "-t " + std::to_string(std::get<0>(o.arg_as<int>()));
+            return "-t " + std::to_string(std::get<0>(o.data_as<int>()));
 
         case Term::vnc:
-            return "-v " + std::to_string(std::get<0>(o.arg_as<int>()));
+            return "-v " + std::to_string(std::get<0>(o.data_as<int>()));
 
         case Image::unknown:
             throw std::runtime_error("show: internal error");
