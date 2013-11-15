@@ -26,10 +26,9 @@ namespace net {
         {
             if (inet_pton(AF_INET, addr, &addr_) <= 0) 
                 throw std::runtime_error(std::string("net::address: ").append(addr).append(" invalid address"));
+
             if (inet_pton(AF_INET, mask, &mask_) <= 0)
                 throw std::runtime_error(std::string("net::address: ").append(mask).append(" invalid address"));
-            
-            addr_.s_addr &= mask_.s_addr;
         }
 
         address(const char *addr, size_t n=32)
@@ -37,26 +36,24 @@ namespace net {
         {
             if (inet_pton(AF_INET, addr, &addr_) <= 0)
                 throw std::runtime_error(std::string("net::address: ").append(addr).append(" invalid address"));
+
             mask_ = prefix2mask(n);
-            addr_.s_addr &= mask_.s_addr;
         }
 
         address(const in_addr& a, const in_addr &m)
         : addr_(a), mask_(m)
         {
-            addr_.s_addr &= mask_.s_addr;
         }
 
         address(const in_addr& a, size_t n=32)
         : addr_(a), mask_(prefix2mask(n))
         {
-            addr_.s_addr &= mask_.s_addr;
         }
 
         address(ipv4_t addr, size_t n=32)
         : mask_(prefix2mask(n))
         {
-            addr_.s_addr = addr.value & mask_.s_addr;
+            addr_.s_addr = addr.value;
         } 
 
         ~address()
