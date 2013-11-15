@@ -138,11 +138,14 @@ namespace topo
         {
             auto nlink = std::get<1>(s.second);
 
-            ret.push_back( make_bridge_cmdline(node_name(get_switch(s.second)),
-                                               node_type(get_switch(s.second)),
-                                               base, nlink) ); 
+            if (nlink > 0)
+            {
+                ret.push_back( make_bridge_cmdline(node_name(get_switch(s.second)),
+                                                   node_type(get_switch(s.second)),
+                                                   base, nlink) ); 
+                base += nlink;
+            }
 
-            base += nlink;
         }
 
         return ret;
