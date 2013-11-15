@@ -1,6 +1,8 @@
 CXX=g++
 
-CPPFLAGS=-g -std=c++0x -O3 -DNDEBUG -Wall -Wextra -I . -I lib   
+EXTRA_FLAGS=-DUSE_VECTOR_SWITCH
+
+CPPFLAGS=-g -std=c++0x -O3 -DNDEBUG -Wall -Wextra -I . -I lib ${EXTRA_FLAGS} 
 LDFLAGS=-g 
 LDLIBS=-pthread
 

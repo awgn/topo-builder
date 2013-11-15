@@ -19,7 +19,11 @@ namespace topo
 
         for(auto &s : ss)
         {
+#ifdef USE_VECTOR_SWITCH
+            ret.push_back(std::make_pair(s.first,std::make_tuple(s, 0, 0, 0)));
+#else
             ret[s.first] = std::make_tuple(s, 0, 0, 0);
+#endif
         }
 
         // compute the per-switch number of links...
@@ -29,7 +33,15 @@ namespace topo
         {
             for(auto &port : node_ports(node))
             {
+#ifdef USE_VECTOR_SWITCH
+                auto it = std::find_if(std::begin(ret), 
+                                       std::end(ret),
+                                       [&](std::pair<std::string, SwitchInfo> const &elem) {
+                                            return elem.first == port_linkname(port);
+                                       });
+#else
                 auto it = ret.find(port_linkname(port));
+#endif
                 if (it == std::end(ret))
                     throw std::runtime_error("make_switch_map: " + port_linkname(port) + " not found");
 
@@ -60,7 +72,15 @@ namespace topo
     int
     get_first_tap_avail(SwitchMap &sm, std::string const &name)
     {
+#ifdef USE_VECTOR_SWITCH
+        auto it = std::find_if(std::begin(sm), 
+                               std::end(sm),
+                               [&](std::pair<std::string, SwitchInfo> const &elem) {
+                                    return elem.first == name;
+                               });
+#else
         auto it = sm.find(name);
+#endif
         if (it == std::end(sm))
             throw std::runtime_error("get_tap_index: switch " + name + " not found");
 
