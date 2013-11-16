@@ -1,3 +1,13 @@
+/* $Id$ */
+/*
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
+ * ----------------------------------------------------------------------------
+*/
+
 #pragma once 
 
 #include <arpa/inet.h> 
@@ -84,15 +94,11 @@ inline namespace inline_more
     }
 
     inline std::string
-    show(const ipv4_t &addr, const char * n = nullptr)
+    show(const ipv4_t &addr)
     {
-        std::string s;
-        if (n) {
-            s += std::string(n) + ' ';
-        }
         char buf[16] = { '\0' };
         inet_ntop(AF_INET, &addr, buf, sizeof(buf));
-        return s + std::string(buf);
+        return std::string(buf);
     }
 
     ///////////////////////////////////////
