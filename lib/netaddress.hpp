@@ -1,3 +1,13 @@
+/* $Id$ */
+/*
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <bonelli@antifork.org> wrote this file. As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return. Nicola Bonelli
+ * ----------------------------------------------------------------------------
+*/
+
 #pragma once 
 
 #include <sys/socket.h>
@@ -89,15 +99,6 @@ namespace net {
             return mask2prefix(mask_);
         }
 
-        void
-        prefix(size_t np)
-        {
-            if (np > prefix())
-                throw std::runtime_error("prefix can only be decreased");
-            mask_ = prefix2mask(np);
-            addr_.s_addr &= mask_.s_addr;
-        }
-
         bool operator==(const address &other) const
         {
             return addr_.s_addr == other.addr_.s_addr &&
@@ -174,20 +175,23 @@ namespace net {
         char ip[16];
         if (inet_ntop(AF_INET, &other.addr(), ip, sizeof(ip)) == nullptr) 
             throw std::runtime_error("address::operator<<");
-        return out << ip << '/' << other.prefix();
+
+        if (other.prefix() == 32)
+            return out << ip;
+        else
+            return out << ip << '/' << other.prefix();
     }
 
     inline std::string
-    show(const address &addr, const char * n = nullptr)
+    show(const address &addr)
     {
-        std::string s;
-        if (n) {
-            s += std::string(n) + ' ';
-        }
         char buf[16] = { '\0' };
         inet_ntop(AF_INET, &addr.addr(), buf, sizeof(buf));
 
-        return s + std::string(buf) + '/' + std::to_string(addr.prefix());
+        if (addr.prefix() == 32)
+            return std::string(buf);
+        else
+            return std::string(buf) + '/' + std::to_string(addr.prefix());
     }
 
     template <typename CharT, typename Traits>
@@ -203,7 +207,7 @@ namespace net {
             ~rollback()
             {
                 if (err_) {
-                    
+
                     if (!ref_.seekg(pos_))
                         ref_.setstate(std::ios_base::badbit);         
                     else 
@@ -223,52 +227,50 @@ namespace net {
             return in;
         }
 
-        if (addr.front() == '"' ||
-            addr.front() == '\'')
+        if (addr.front() == '"' || addr.front() == '\'')
         {
             auto tmp = std::string(addr.begin() + 1, addr.end() - 1);
             addr = std::move(tmp);
         }
 
         auto pos = addr.find('/');
-        if (pos == std::string::npos)
-        { 
-            return in;
-        }
 
-        auto it = addr.begin(); std::advance(it, pos);
+        auto it  = pos == std::string::npos ? std::end(addr) : 
+                                              std::next(std::begin(addr), pos);
 
-        std::string addr_s(addr.begin(), it++);
-        std::string mask_s(it, addr.end());
+        in_addr a, m; 
 
-        in_addr a, m; uint32_t n = 0;
-	    bool numericMask = false;
+        std::string addr_str(addr.begin(), it);
 
-        if (inet_pton(AF_INET, addr_s.c_str(), &a) <= 0)
+        if (inet_pton(AF_INET, addr_str.c_str(), &a) <= 0)
         {
-            return in;
+            throw std::runtime_error("net::address: address");
         }
 
-        if (inet_pton(AF_INET, mask_s.c_str(), &m) <= 0)
+        if (pos == std::string::npos)
+        {
+            return_.err_ = false;
+            return (out = address(a, 32)), in;
+        }
+
+        auto prefix = std::make_pair(0, false); 
+
+        std::string mask_str(++it, addr.end());
+       
+        if (inet_pton(AF_INET, mask_str.c_str(), &m) <= 0)
         {
             // numeric mask
-            //
-            numericMask = true;
-            try {
-                size_t len;
-                n = std::stoul(mask_s, &len);
-                if (n > 32 || len != mask_s.size())
-                    throw 0;
-            }
-            catch(...) {
-                return in;
-            }
+            
+            prefix.second = true;
+            size_t len;
+            prefix.first = std::stoul(mask_str, &len);
+            if (prefix.first > 32 || len != mask_str.size())
+                throw std::runtime_error("net::address: mask");
         }
-        
+
         return_.err_ = false;
-        return  (numericMask == false ? (out = address(a,m)) : (out = address(a,n))), in;
-    }
-    
+        return (prefix.second ? (out = address(a,prefix.first)): (out = address(a,m))), in;
+    } 
 
 } // namespace net
 
