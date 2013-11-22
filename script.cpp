@@ -115,7 +115,7 @@ namespace topo
             auto image_opt = opt::show(image);
             auto term_opt = opt::show(term);
 
-            return more::sprint("startmv.sh -k -n %1 -I \"%2\" %3 -l %4 -c %5 %7 </dev/zero &>log-%6.txt &",
+            return more::sprint("startvm.sh -k -n %1 -I \"%2\" %3 -l %4 -c %5 %7 </dev/zero &>log-%6.txt &",
                                     term_opt,
                                     tap_opt,
                                     image_opt,
