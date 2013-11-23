@@ -12,6 +12,10 @@
 
 namespace topo {
 
+
+    typedef std::vector<std::string> Strings;
+
+
     ///////////////////////////////////////////////////////////////////////////
     //  
     //  port: [ "eth0" 192.168.0.1/24 -> vswitch0 ]

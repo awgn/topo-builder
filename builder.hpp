@@ -7,6 +7,6 @@
 
 namespace topo 
 {
-    int builder(Switches ss, Nodes ns);
+    int builder(Strings, Switches ss, Nodes ns, Strings);
     
 } // namespace topo

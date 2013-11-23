@@ -15,6 +15,14 @@ namespace topo {
     namespace basic {
     namespace parser {
 
+        // declare a vector of string:
+        //
+        
+        MAP_KEY(Strings, header)
+
+
+        MAP_KEY(Strings, footer)
+
         // declare a vector of nodes:
         //
         
@@ -26,7 +34,7 @@ namespace topo {
         MAP_KEY(std::vector<Switch>, switches)
         
 
-        typedef more::key_value_pack<nodes, switches> type;
+        typedef more::key_value_pack<header, nodes, switches, footer> type;
 
 
     } // namespace parser

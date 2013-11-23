@@ -97,7 +97,7 @@ namespace topo
     // main builder function...
     //
 
-    int builder(Switches ss, Nodes ns)
+    int builder(Strings header, Switches ss, Nodes ns, Strings footer)
     {
         auto sm = make_switch_map(ss, ns);
 
@@ -137,6 +137,15 @@ namespace topo
         // dump script...
         //
         
+        if (!header.empty())
+        {
+            std::cout << "# header..." << std::endl;
+            for(auto &l : header)
+            {
+                std::cout << l << std::endl;
+            }
+        }
+
         auto br = script::make_bridges(sm);
 
         std::cout << "\n# make bridges..." << std::endl; script::show(br);
@@ -154,6 +163,15 @@ namespace topo
         auto vms = script::make_vms(ns, tm);
 
         std::cout << "\n# start VMs..." << std::endl; script::show(vms);
+
+        if (!footer.empty())
+        {
+            std::cout << "# footer..." << std::endl;
+            for(auto &l : footer)
+            {
+                std::cout << l << std::endl;
+            }
+        }
 
         return 0;
     }

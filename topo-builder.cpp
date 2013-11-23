@@ -112,8 +112,11 @@ try
                                                                comment('#')))
                 throw std::runtime_error("parse error in config file!");
 
-            return topo::builder(std::move(more::get<topo::basic::parser::switches>(config)),
-                                 std::move(more::get<topo::basic::parser::nodes>(config)));
+            return topo::builder(std::move(more::get<topo::basic::parser::header>(config)),
+                                 std::move(more::get<topo::basic::parser::switches>(config)),
+                                 std::move(more::get<topo::basic::parser::nodes>(config)),
+                                 std::move(more::get<topo::basic::parser::footer>(config))
+                                 );
 
         } break;
     default: throw std::runtime_error("internal error");
