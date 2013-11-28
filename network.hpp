@@ -118,6 +118,7 @@ namespace topo {
         return out;
     }
 
+
     template <typename CharT, typename Traits>
     typename std::basic_istream<CharT, Traits> &
     operator>>(std::basic_istream<CharT,Traits>& in, switch_type&  that)
@@ -212,7 +213,7 @@ namespace topo {
 
     typedef std::vector<std::pair<std::string, SwitchInfo>> SwitchMap;
 
-    typedef std::map<std::string, std::vector<int>> TapMap;
+    typedef std::map<std::string, std::vector<std::pair<switch_type, int>>> TapMap;
 
     ///////////////////////////////////////////////////////////////////////////
     //

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include <show.hpp>
 #include <print.hpp>
@@ -22,9 +23,9 @@ namespace topo
             std::string opt_type;
             switch(t)
             {
-            case topo::switch_type::bridge:   opt_type = more::sprint("-B %1", name); break;
-            case topo::switch_type::macvtap:  break;
-            case topo::switch_type::macvtap2: opt_type = "-2"; break;
+            case topo::switch_type::bridge:   opt_type = more::sprint("-B %1",    name); break;
+            case topo::switch_type::macvtap:  opt_type = more::sprint("-V %1",    name); break;
+            case topo::switch_type::macvtap2: opt_type = more::sprint("-V %1 -2", name); break;
             default: throw std::runtime_error("make_bridge_cmdline: internal error");
             }
 
@@ -60,21 +61,28 @@ namespace topo
                              opt::Gateway       const &gateway,
                              std::string        const &vmlinuz, 
                              std::string        const &core, 
-                             std::vector<int>   const &ts,
+                             std::vector<std::pair<switch_type, int>> const &tmap,
                              int id)
         {
-            if (ts.empty())
+            if (tmap.empty())
                 throw std::logic_error("make_startvm_cmdline: no taps available");
             
-            std::string tap_opt;
+            std::string tap_opt, macvtap_opt;
 
-            auto t = std::begin(ts);
-
-            do 
+            for(auto & elem : tmap)
             {
-                tap_opt += "tap" + std::to_string(*t++);
+                switch(elem.first)
+                {
+                    case switch_type::bridge:  tap_opt     += "tap"     + std::to_string(elem.second) + ' '; break;
+                    case switch_type::macvtap: macvtap_opt += "macvtap" + std::to_string(elem.second) + ' '; break;
+                }
             }
-            while (t != std::end(ts) ? (tap_opt += ' ', true) : false);
+
+            if (!tap_opt.empty())
+                tap_opt = "-I \"" + std::string(tap_opt, 0, tap_opt.size()-1) + "\""; 
+
+            if (!macvtap_opt.empty())
+                macvtap_opt = "-i \"" + std::string(macvtap_opt, 0, macvtap_opt.length()-1) + "\""; 
 
             // append extra flags to guest kernel...
             //
@@ -113,11 +121,12 @@ namespace topo
             }
 
             auto image_opt = opt::show(image);
-            auto term_opt = opt::show(term);
+            auto term_opt  = opt::show(term);
 
-            return more::sprint("startvm.sh -k -n %1 -I \"%2\" %3 -l %4 -c %5 %7 </dev/zero &>log-%6.txt &",
+            return more::sprint("startvm.sh -k -n %1 %2 %3 %4 -l %5 -c %6 %8 </dev/zero &>log-%7.txt &",
                                     term_opt,
                                     tap_opt,
+                                    macvtap_opt,
                                     image_opt,
                                     vmlinuz,
                                     core,

@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 namespace topo
 {
@@ -99,16 +100,25 @@ namespace topo
 
         for(auto &n : ns)
         {
-            std::vector<int> taps;
+            std::vector<std::pair<switch_type,int>> taps;
 
             for(auto p : node_ports(n))
             {
-                auto tap = get_first_tap_avail(sm, port_linkname(p));
+                auto name = port_linkname(p);
+                
+                auto it = std::find_if(std::begin(ss), std::end(ss), [&](std::pair<std::string, switch_type> const &s) {
+                                        return s.first == name;
+                                    });
 
-                taps.push_back(tap);
+                if (it == std::end(ss))
+                    throw std::runtime_error("builder: switch name " + name  + " not found!");
+
+                auto tap = std::make_pair(it->second, get_first_tap_avail(sm, port_linkname(p)));
+
+                taps.push_back(std::move(tap));
             }
 
-            tm[node_name(n)] = std::move(taps);
+            tm.insert(std::make_pair(node_name(n),std::move(taps)));
         }
 
         // display maps...
