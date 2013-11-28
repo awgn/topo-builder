@@ -25,7 +25,6 @@ namespace topo
             {
             case topo::switch_type::bridge:   opt_type = more::sprint("-B %1",    name); break;
             case topo::switch_type::macvtap:  opt_type = more::sprint("-V %1",    name); break;
-            case topo::switch_type::macvtap2: opt_type = more::sprint("-V %1 -2", name); break;
             default: throw std::runtime_error("make_bridge_cmdline: internal error");
             }
 

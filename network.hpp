@@ -96,7 +96,6 @@ namespace topo {
     {
         bridge,
         macvtap,
-        macvtap2,
         vale
     };
 
@@ -110,8 +109,6 @@ namespace topo {
             return out << "bridge";
         case switch_type::macvtap:
             return out << "macvtap";
-        case switch_type::macvtap2:
-            return out << "macvtap2";
         case switch_type::vale:
             return out << "vale";
         }
@@ -134,10 +131,6 @@ namespace topo {
         if (s.compare("macvtap") == 0)
         {
             return that = switch_type::macvtap, in;
-        }
-        if (s.compare("macvtap2") == 0)
-        {
-            return that = switch_type::macvtap2, in;
         }
         if (s.compare("vale") == 0)
         {
