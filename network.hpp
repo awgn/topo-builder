@@ -210,11 +210,7 @@ namespace topo {
     }
 
 
-#ifdef USE_VECTOR_SWITCH
     typedef std::vector<std::pair<std::string, SwitchInfo>> SwitchMap;
-#else
-    typedef std::map<std::string, SwitchInfo> SwitchMap;
-#endif
 
     typedef std::map<std::string, std::vector<int>> TapMap;
 
