@@ -50,6 +50,11 @@ namespace generic {
     template <typename ...Ts>
     struct args_pack : public base_args
     {
+        template <typename ...Ti>
+        args_pack(Ti && ...xi)
+        : value(std::forward<Ti>(xi)...)
+        {}
+
         std::tuple<Ts...> value;
     };
 
@@ -72,6 +77,19 @@ namespace generic {
         std::shared_ptr<generic::base_args> args_;
 
     public:
+
+        base_type()
+        : ctor_()
+        , args_()
+        {}
+
+        template <typename ...Ts>
+        base_type(std::string ctor, Ts && ... args)
+        : ctor_(std::move(ctor))
+        , args_(std::shared_ptr<generic::args_pack<Ts...>>(new generic::args_pack<Ts...>(std::forward<Ts>(args)...)))
+        {
+            Tp::visitor_map().find(ctor_)->second->check(ctor_, args_);  // this find can't fail... :P
+        }
 
         virtual ~base_type() {}
 
@@ -138,24 +156,20 @@ namespace generic {
     
     template <typename Tp>
     inline std::string
-    show(const base_type<Tp> &opt, const char * n = nullptr)
+    show(const base_type<Tp> &opt)
     {
-        std::string s;
-        if (n) {
-            s += std::string(n) + ' ';
-        }
         std::ostringstream ss; ss << opt;
-        return s + ss.str();
+        return ss.str();
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     struct base_visitor
     {
-        virtual void read(std::string const &base_type, std::istream &stream, std::shared_ptr<base_args> &) = 0;
-        virtual void show(std::string const &base_type, std::ostream &stream, std::shared_ptr<base_args> const &) = 0;
+        virtual void read (std::string const &type, std::istream &stream, std::shared_ptr<base_args> &) = 0;
+        virtual void check(std::string const &type, std::shared_ptr<base_args> const &) = 0;
+        virtual void show (std::string const &type, std::ostream &stream, std::shared_ptr<base_args> const &) = 0;
     };
-
 
     template <typename ... Ts>
     struct visitor : public base_visitor
@@ -206,18 +220,36 @@ namespace generic {
 
         virtual void show(std::string const &type, std::ostream &out, std::shared_ptr<base_args> const &args)
         {
-            auto t = dynamic_cast<args_pack<Ts...> const &>(*args).value;
-            more::tuple_for_each(t, show_on(type, out));
+            auto p = dynamic_cast<args_pack<Ts...> const *>(args.get());
+            if (p == nullptr)
+                throw std::runtime_error(type + ": bad arguments pack");
+
+            more::tuple_for_each(p->value, show_on(type, out));
         }
-    
+        
+        virtual void check(std::string const &type, std::shared_ptr<base_args> const &args)
+        {
+            auto p = dynamic_cast<args_pack<Ts...> const *>(args.get());
+            if (p == nullptr)
+                throw std::runtime_error(type + ": bad arguments pack");
+        }
     };
+
 
 } // namespace generic 
 
 
-#define GENERIC_GET_CTOR(x, ...)     x
-#define GENERIC_GET_CSTR(x, ...)     #x
-#define GENERIC_GET_PAIR(x, ...)   { #x, std::make_shared<generic::visitor<__VA_ARGS__>>() }
+#define GENERIC_GET_CTOR(x, ...)        x
+#define GENERIC_GET_CSTR(x, ...)        #x
+#define GENERIC_GET_PAIR(x, ...)      { #x, std::make_shared<generic::visitor<__VA_ARGS__>>() }
+#define GENERIC_MAKE_CTOR(name, ...) \
+    template <typename ...Ts> \
+    static Tp make_ ## name (Ts && ... args) \
+    {   \
+        Tp ret (#name, std::forward<Ts>(args)...);  \
+        return ret; \
+    }
+    
 
 #define GENERIC_TYPE(T, ...) \
     struct T ## _type \
@@ -225,18 +257,32 @@ namespace generic {
         static std::map<std::string, std::shared_ptr<generic::base_visitor>> & \
         visitor_map() \
         { \
-            static std::map<std::string, std::shared_ptr<generic::base_visitor>> instance = { FOR_EACH(GENERIC_GET_PAIR, __VA_ARGS__) }; \
+            static std::map<std::string, std::shared_ptr<generic::base_visitor>> instance = { FOR_EACH_COMMA(GENERIC_GET_PAIR, __VA_ARGS__) }; \
             return instance; \
         } \
     }; \
     \
-    struct T : generic::base_type<T ## _type> \
+    template <typename Tp> \
+    struct T ## _ctors \
+    {  \
+       FOR_EACH(GENERIC_MAKE_CTOR, __VA_ARGS__) \
+       \
+    }; \
+    struct T : generic::base_type<T ## _type>, T ## _ctors<T> \
     { \
-        enum type_ctor { unknown, FOR_EACH(GENERIC_GET_CTOR,__VA_ARGS__) }; \
+        enum type_ctor { unknown, FOR_EACH_COMMA(GENERIC_GET_CTOR,__VA_ARGS__) }; \
         \
         T() \
         : type_(unknown) \
         {} \
+        \
+        template <typename ...Ts> \
+        T(std::string const &name, Ts && ... args) \
+        : generic::base_type<T ## _type>(name, std::forward<Ts>(args)...) \
+        { \
+          type(name); \
+          \
+        } \
         \
         type_ctor type() const \
         { \
@@ -246,7 +292,7 @@ namespace generic {
         void \
         type(std::string const &t) \
         { \
-            static std::vector<std::string> xs = { "", FOR_EACH(GENERIC_GET_CSTR, __VA_ARGS__) }; \
+            static std::vector<std::string> xs = { "", FOR_EACH_COMMA(GENERIC_GET_CSTR, __VA_ARGS__) }; \
             auto it = std::find(std::begin(xs), std::end(xs), t); \
             if (it == std::end(xs)) \
                 type_ = unknown; \
@@ -256,5 +302,4 @@ namespace generic {
         \
     private: \
         type_ctor type_; \
-    };
-
+    }; 
