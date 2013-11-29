@@ -63,7 +63,7 @@ namespace topo
     //
 
     int
-    get_first_tap_avail(SwitchMap &sm, std::string const &name)
+    get_first_link_avail(SwitchMap &sm, std::string const &name)
     {
         auto it = std::find_if(std::begin(sm), 
                                std::end(sm),
@@ -102,7 +102,7 @@ namespace topo
         {
             auto &ports = std::get<3>(n);
 
-            std::stable_sort(std::begin(ports), std::end(ports), [&] (Port const &l, Port const &r) -> bool {
+            std::sort(std::begin(ports), std::end(ports), [&] (Port const &l, Port const &r) -> bool {
 
                                 auto it_l = std::find_if(std::begin(ss), std::end(ss), [&](Switch const &s)
                                                          {
@@ -113,8 +113,18 @@ namespace topo
                                                          {
                                                                 return port_linkname(r) == node_name(s);   
                                                          });
-                                    return it_l ->second < it_r->second;
-                             });
+                                
+                                if (it_l == std::end(ss))
+                                    throw std::logic_error("builder: internal error: " +  port_linkname(l) + " switch not found!");
+
+                                if (it_r == std::end(ss))
+                                    throw std::logic_error("builder: internal error: " +  port_linkname(r) + " switch not found!");
+
+                               // lexicographical comparison...
+                               // 
+                               return it_l->second < it_r->second /* sort on the basis of switch type */ ||
+                                      ( it_l->second == it_r->second && std::distance(std::begin(ss), it_l) < std::distance(std::begin(ss), it_r) ); /* respect the relative order of switches otherwise */
+                        });
         }
 
         auto sm = make_switch_map(ss, ns);
@@ -142,7 +152,7 @@ namespace topo
                 if (it == std::end(ss))
                     throw std::runtime_error("builder: switch name " + name  + " not found!");
 
-                auto tap = std::make_pair(it->second, get_first_tap_avail(sm, port_linkname(p)));
+                auto tap = std::make_pair(it->second, get_first_link_avail(sm, port_linkname(p)));
 
                 taps.push_back(std::move(tap));
             }
