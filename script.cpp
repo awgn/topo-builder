@@ -107,7 +107,7 @@ namespace topo
                     return it != it_e ? (append_opt += ",", true) : false;
                 }()); 
 
-                // eventualy add the default gw if specified...
+                // eventually add the default gw if specified...
                 //
                 
                 if (gateway.type() == opt::Gateway::defaultgw) 
