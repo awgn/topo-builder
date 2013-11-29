@@ -88,6 +88,35 @@ namespace topo
 
     int builder(Strings header, Switches ss, Nodes ns, Strings footer)
     {
+        // sort Switches, macvtaps interface come first 
+        //
+        
+        std::stable_sort(std::begin(ss), std::end(ss), [](Switch const &l, Switch const &r) {
+                            return l.second < r.second;
+                         });
+
+        // sort Ports of nodes, macvtaps interface come first 
+        //
+
+        for(auto &n : ns)
+        {
+            auto &ports = std::get<3>(n);
+
+            std::stable_sort(std::begin(ports), std::end(ports), [&] (Port const &l, Port const &r) -> bool {
+
+                                auto it_l = std::find_if(std::begin(ss), std::end(ss), [&](Switch const &s)
+                                                         {
+                                                                return port_linkname(l) == node_name(s);   
+                                                         });
+
+                                auto it_r = std::find_if(std::begin(ss), std::end(ss), [&](Switch const &s)
+                                                         {
+                                                                return port_linkname(r) == node_name(s);   
+                                                         });
+                                    return it_l ->second < it_r->second;
+                             });
+        }
+
         auto sm = make_switch_map(ss, ns);
 
         if (global::instance().verbose)

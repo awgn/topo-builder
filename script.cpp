@@ -124,8 +124,8 @@ namespace topo
 
             return more::sprint("startvm.sh -k -n %1 %2 %3 %4 -l %5 -c %6 %8 </dev/zero &>log-%7.txt &",
                                     term_opt,
-                                    tap_opt,
                                     macvtap_opt,
+                                    tap_opt,
                                     image_opt,
                                     vmlinuz,
                                     core,
