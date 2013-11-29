@@ -2,6 +2,8 @@
 
 #include <generic_type.hpp>
 
+#include <netaddress.hpp>
+
 namespace opt {
 
     GENERIC_TYPE(Image, ( image,  std::string),
