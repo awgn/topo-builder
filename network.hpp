@@ -94,8 +94,8 @@ namespace topo {
 
     enum class switch_type
     {
-        bridge,
         macvtap,
+        bridge,
         vale
     };
 
@@ -105,12 +105,9 @@ namespace topo {
     {
         switch(that)
         {
-        case switch_type::bridge:
-            return out << "bridge";
-        case switch_type::macvtap:
-            return out << "macvtap";
-        case switch_type::vale:
-            return out << "vale";
+        case switch_type::macvtap: return out << "macvtap";
+        case switch_type::bridge:  return out << "bridge";
+        case switch_type::vale:    return out << "vale";
         }
         return out;
     }
@@ -124,13 +121,13 @@ namespace topo {
         if (!(in >> s))
             return in;
       
-        if (s.compare("bridge") == 0)
-        {
-            return that = switch_type::bridge, in;
-        }
         if (s.compare("macvtap") == 0)
         {
             return that = switch_type::macvtap, in;
+        }
+        if (s.compare("bridge") == 0)
+        {
+            return that = switch_type::bridge, in;
         }
         if (s.compare("vale") == 0)
         {
