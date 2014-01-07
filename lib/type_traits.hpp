@@ -145,6 +145,17 @@ namespace more
                                                                >
     {};
 
+
+    // is_associative_container 
+    //
+    
+    template <typename T>
+    struct is_associative_container : std::integral_constant<bool, is_container<T>::value &&
+                                                                   __has_key_type_helper<T>::value &&
+                                                                   __has_mapped_type_helper<T>::value>
+    {};
+
+
     // is_vector_like
     //
     

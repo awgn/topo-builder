@@ -1020,7 +1020,7 @@ namespace more {
 
     template <typename ...Ts>
     inline std::string
-    show(const key_value_pack<Ts...> &, const char * = nullptr)
+    show(const key_value_pack<Ts...> &)
     {
         return details::type_name<key_value_pack<Ts...>>() + "{ ... }";    
     }

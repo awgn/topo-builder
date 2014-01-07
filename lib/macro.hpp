@@ -43,10 +43,6 @@
 #define UNPACK(x)           UNPACK_ARGS x
 #define APPLY(f, ...)       f(__VA_ARGS__)
 
-#define CONCAT_COMMA(x, ...)        x, __VA_ARGS__
-#define CONCAT_SEMICOLON(x, ...)    x; __VA_ARGS__
-#define CONCAT_SPACE(x, ...)        x  __VA_ARGS__
-
 #define FOR_EACH_1(c, f, x)        APPLY(f,UNPACK(x))
 #define FOR_EACH_2(c, f, x, ...)   c(APPLY(f,UNPACK(x)), FOR_EACH_1(c, f, __VA_ARGS__))
 #define FOR_EACH_3(c, f, x, ...)   c(APPLY(f,UNPACK(x)), FOR_EACH_2(c, f, __VA_ARGS__))
@@ -71,4 +67,34 @@
 #define FOR_EACH(f, ...)            XPASTE(FOR_EACH_, PP_NARG(__VA_ARGS__))(CONCAT_SPACE    , f, __VA_ARGS__)
 #define FOR_EACH_COMMA(f, ...)      XPASTE(FOR_EACH_, PP_NARG(__VA_ARGS__))(CONCAT_COMMA    , f, __VA_ARGS__)
 #define FOR_EACH_SEMICOLON(f, ...)  XPASTE(FOR_EACH_, PP_NARG(__VA_ARGS__))(CONCAT_SEMICOLON, f, __VA_ARGS__)
+
+#define CONCAT_COMMA(x, ...)        x, __VA_ARGS__
+#define CONCAT_SEMICOLON(x, ...)    x; __VA_ARGS__
+#define CONCAT_SPACE(x, ...)        x  __VA_ARGS__
+
+#define FOR2_EACH_1(c, f, a, x)        APPLY(f, a, x)
+#define FOR2_EACH_2(c, f, a, x, ...)   c(APPLY(f,a,x), FOR2_EACH_1(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_3(c, f, a, x, ...)   c(APPLY(f,a,x), FOR2_EACH_2(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_4(c, f, a, x, ...)   c(APPLY(f,a,x), FOR2_EACH_3(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_5(c, f, a, x, ...)   c(APPLY(f,a,x), FOR2_EACH_4(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_6(c, f, a, x, ...)   c(APPLY(f,a,x), FOR2_EACH_5(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_7(c, f, a, x, ...)   c(APPLY(f,a,x), FOR2_EACH_6(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_8(c, f, a, x, ...)   c(APPLY(f,a,x), FOR2_EACH_7(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_9(c, f, a, x, ...)   c(APPLY(f,a,x), FOR2_EACH_8(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_10(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_9(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_11(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_10(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_12(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_11(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_13(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_12(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_14(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_13(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_15(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_14(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_16(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_15(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_17(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_16(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_18(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_17(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_19(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_18(c, f, a, __VA_ARGS__))
+#define FOR2_EACH_20(c, f, a, x, ...)  c(APPLY(f,a,x), FOR2_EACH_19(c, f, a, __VA_ARGS__))
+
+#define FOR2_EACH(f, a, ...)            XPASTE(FOR2_EACH_, PP_NARG(__VA_ARGS__))(CONCAT_SPACE    , f, a, __VA_ARGS__)
+#define FOR2_EACH_COMMA(f, a, ...)      XPASTE(FOR2_EACH_, PP_NARG(__VA_ARGS__))(CONCAT_COMMA    , f, a, __VA_ARGS__)
+#define FOR2_EACH_SEMICOLON(f, a, ...)  XPASTE(FOR2_EACH_, PP_NARG(__VA_ARGS__))(CONCAT_SEMICOLON, f, a, __VA_ARGS__)
+
 
