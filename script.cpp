@@ -17,10 +17,12 @@ namespace topo
         line
         make_bridge_cmdline(std::string const &name,
                             topo::switch_type t,
+                            std::vector<std::string> const &links,
                             int base,
                             int n_if)
         {
-            std::string opt_type;
+            std::string opt_type, opt_links;
+
             switch(t)
             {
                 case topo::switch_type::bridge:  opt_type = more::sprint("-B %1",    name); break;
@@ -29,7 +31,21 @@ namespace topo
                 default: throw std::runtime_error("make_bridge_cmdline: internal error");
             }
 
-            return more::sprint("vnet-setup.sh %1 -z -m %2 -n %3", opt_type, base, n_if);
+            /* link physical ethernet */
+
+            if (!links.empty())
+            {
+                opt_links += "-L ";
+                for(auto & l : links)
+                {
+                    opt_links += l; 
+
+                    if (&l != &links.back()) 
+                        opt_links += ','; 
+                }
+            }
+
+            return more::sprint("vnet-setup.sh %1 -z -m %2 -n %3 %4", opt_type, base, n_if, opt_links);
         }
 
 
@@ -150,8 +166,11 @@ namespace topo
 
             if (nlink > 0)
             {
-                ret.push_back( make_bridge_cmdline(node_name(get_switch(s.second)),
-                                                   node_type(get_switch(s.second)),
+                auto const &sw = get_switch(s.second);
+
+                ret.push_back( make_bridge_cmdline(node_name(sw),
+                                                   node_type(sw),
+                                                   node_links(sw),
                                                    base, nlink) ); 
                 base += nlink;
             }
