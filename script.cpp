@@ -23,9 +23,10 @@ namespace topo
             std::string opt_type;
             switch(t)
             {
-            case topo::switch_type::bridge:   opt_type = more::sprint("-B %1",    name); break;
-            case topo::switch_type::macvtap:  opt_type = more::sprint("-V %1",    name); break;
-            default: throw std::runtime_error("make_bridge_cmdline: internal error");
+                case topo::switch_type::bridge:  opt_type = more::sprint("-B %1",    name); break;
+                case topo::switch_type::macvtap: opt_type = more::sprint("-V %1",    name); break;
+                case topo::switch_type::openvs:  opt_type = more::sprint("-O %1",    name); break;
+                default: throw std::runtime_error("make_bridge_cmdline: internal error");
             }
 
             return more::sprint("vnet-setup.sh %1 -z -m %2 -n %3", opt_type, base, n_if);
@@ -72,7 +73,8 @@ namespace topo
             {
                 switch(elem.first)
                 {
-                    case switch_type::bridge:  tap_opt     += "tap"     + std::to_string(elem.second) + ' '; break;
+                    case switch_type::bridge :  tap_opt    += "tap"     + std::to_string(elem.second) + ' '; break;
+                    case switch_type::openvs :  tap_opt    += "tap"     + std::to_string(elem.second) + ' '; break;
                     case switch_type::macvtap: macvtap_opt += "macvtap" + std::to_string(elem.second) + ' '; break;
                 }
             }

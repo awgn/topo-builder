@@ -95,6 +95,7 @@ namespace topo {
     enum class switch_type
     {
         macvtap,
+        openvs,
         bridge,
         vale
     };
@@ -105,9 +106,10 @@ namespace topo {
     {
         switch(that)
         {
-        case switch_type::macvtap: return out << "macvtap";
-        case switch_type::bridge:  return out << "bridge";
-        case switch_type::vale:    return out << "vale";
+        case switch_type::macvtap:  return out << "macvtap";
+        case switch_type::openvs:   return out << "openvs";
+        case switch_type::bridge:   return out << "bridge";
+        case switch_type::vale:     return out << "vale";
         }
         return out;
     }
@@ -125,6 +127,10 @@ namespace topo {
         {
             return that = switch_type::macvtap, in;
         }
+        if (s.compare("openvs") == 0)
+        {
+            return that = switch_type::openvs, in;
+        }
         if (s.compare("bridge") == 0)
         {
             return that = switch_type::bridge, in;
@@ -139,12 +145,9 @@ namespace topo {
     }    
     
     inline std::string
-    show(const switch_type &st, const char * n = nullptr)
+    show(const switch_type &st)
     {
         std::string s;
-        if (n) {
-            s += std::string(n) + ' ';
-        }
         std::ostringstream ss; ss << st;
         return s + ss.str();
     }
