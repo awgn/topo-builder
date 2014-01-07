@@ -152,19 +152,25 @@ namespace topo {
         return s + ss.str();
     }
 
-    typedef std::pair<std::string, switch_type> Switch;
+    typedef std::tuple<std::string, switch_type, std::vector<std::string>> Switch;
 
     inline std::string
     node_name(Switch const &s)
     {
-        return s.first;
+        return std::get<0>(s);
     }
 
 
     inline switch_type
     node_type(Switch const &s)
     {
-        return s.second;
+        return std::get<1>(s);
+    }
+    
+    inline std::vector<std::string>
+    node_link(Switch const &s)
+    {
+        return std::get<2>(s);
     }
 
     typedef std::vector<Switch> Switches;
