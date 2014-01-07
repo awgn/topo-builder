@@ -168,7 +168,7 @@ namespace topo {
     }
     
     inline std::vector<std::string>
-    node_link(Switch const &s)
+    node_links(Switch const &s)
     {
         return std::get<2>(s);
     }
