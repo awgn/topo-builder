@@ -35,14 +35,18 @@ namespace topo
 
             if (!links.empty())
             {
-                opt_links += "-L ";
+                opt_links += "-I \"";
                 for(auto & l : links)
                 {
-                    opt_links += l; 
+                    if (l.find("eth") != 0) 
+                        throw std::runtime_error(l + ": unknown device");
+
+                    opt_links += l.substr(3); 
 
                     if (&l != &links.back()) 
-                        opt_links += ','; 
+                        opt_links += ' '; 
                 }
+                opt_links += '"';
             }
 
             return more::sprint("vnet-setup.sh %1 -z -m %2 -n %3 %4", opt_type, base, n_if, opt_links);
