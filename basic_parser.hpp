@@ -1,4 +1,5 @@
-#include <key_value.hpp>
+#include <variant.hpp>      // more!
+#include <key_value.hpp>    // more!
 
 #include <vector>
 #include <string>
@@ -17,23 +18,18 @@ namespace topo {
     namespace basic {
     namespace parser {
 
-        // MAP_KEY(Strings, header)
-        // MAP_KEY(Strings, footer)
-        // MAP_KEY(std::vector<Node>, nodes)
-        // MAP_KEY(std::vector<Switch>, switches)
-        
         DECLARE_KEY(header);
         DECLARE_KEY(footer);
         DECLARE_KEY(nodes);
         DECLARE_KEY(switches);
 
-        typedef more::key_value::parser
+        typedef more::key_value::document
         <
                 options<true, '#', '='>,
                 pair<header,    Strings>, 
                 pair<footer,    Strings>,
                 pair<nodes,     std::vector<Node>>,
-                pair<switches,  std::vector<Switch>>
+                pair<switches,  std::vector<more::variant<VirtualSwitch, Switch>>>
                 
         > type;
 
