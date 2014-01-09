@@ -265,10 +265,10 @@ namespace more {
         };
 
 
-        // parser:
+        // document:
 
         template <typename Opt, typename ...Ps>
-        struct parser
+        struct document
         {
             static_assert(std::is_base_of<options_base, Opt>::value, "invalid options");
 
@@ -291,10 +291,10 @@ namespace more {
         
         template <typename Opt, typename ...Ps>
         inline
-        std::string show(parser<Opt, Ps...> const& par)
+        std::string show(document<Opt, Ps...> const& doc)
         {
             std::string ret;
-            ret += ::show(par.tuple_);
+            ret += ::show(doc.tuple_);
             return ret;
         }
 
@@ -307,19 +307,19 @@ namespace more {
         {
             template <typename Par>
             static bool 
-            run(std::string const &key, Par &par, std::basic_istream<CharT, Traits> &in)
+            run(std::string const &key, Par &doc, std::basic_istream<CharT, Traits> &in)
             {
                 auto name = details::type_name<typename P0::key_type>();
                 
                 if (key == name)
                 {
-                    auto & value = par.template get<typename P0::key_type>();
+                    auto & value = doc.template get<typename P0::key_type>();
                     value = ::read<typename P0::value_type>(in);
                     return true;
                 }
                 else
                 {
-                    return read_key<CharT, Traits, Opt, Ps...>::run(key, par, in);
+                    return read_key<CharT, Traits, Opt, Ps...>::run(key, doc, in);
                 }
             }
         };
@@ -337,11 +337,11 @@ namespace more {
             }
         };
 
-        // read for parser type:
+        // read for document type:
         
         template <typename CharT, typename Traits, typename Opt, typename ...Ps>
-        inline parser<Opt, Ps...>
-        read(read_tag<parser<Opt, Ps...>>, std::basic_istream<CharT,Traits>&in)
+        inline document<Opt, Ps...>
+        read(read_tag<document<Opt, Ps...>>, std::basic_istream<CharT,Traits>&in)
         {
             bool bracket = false;
 
@@ -349,8 +349,8 @@ namespace more {
             {
                 bracket = true;
             }
-            
-            parser<Opt, Ps...> par;
+
+            document<Opt, Ps...> doc;
 
             while(in)
             {
@@ -389,7 +389,7 @@ namespace more {
                 
                 // parse the value for this key...
                 
-                if (!read_key<CharT, Traits, Opt, Ps...>::run(key, par, in))
+                if (!read_key<CharT, Traits, Opt, Ps...>::run(key, doc, in))
                 {
                     int level = 0;
                 
@@ -419,26 +419,26 @@ namespace more {
             }
 
             if (bracket)
-                throw std::runtime_error("parser: unbalanced brackets");
+                throw std::runtime_error("document: unbalanced brackets");
 
-            return par;
+            return doc;
         }
 
 
         // parse: from string...
 
         template <typename Opt, typename ... Ps>
-        bool parse(std::string content, parser<Opt, Ps...> &par) 
+        bool parse(std::string content, document<Opt, Ps...> &doc) 
         {
             std::istringstream in(content);
-            return parse(in, par, "");
+            return parse(in, doc, "");
         }
 
 
         // parse: from file... (filtering comments)
 
         template <typename Opt, typename ... Ps>
-        bool parse(const char *filename, parser<Opt, Ps...> &par)
+        bool parse(const char *filename, document<Opt, Ps...> &doc)
         {
             std::ifstream ifs(filename);
             if (!ifs)
@@ -449,18 +449,18 @@ namespace more {
 
             details::streambuf sb(ifs.rdbuf(), Opt::comment);
             std::istream in(&sb);    
-            return parse(in, par, filename);
+            return parse(in, doc, filename);
         }
        
 
         // parse: from input stream...
         
         template <typename CharT, typename Traits, typename Opt, typename ... Ps>
-        bool parse(std::basic_istream<CharT, Traits> &in, parser<Opt, Ps...> &par, const char *filename) 
+        bool parse(std::basic_istream<CharT, Traits> &in, document<Opt, Ps...> &doc, const char *filename) 
         {
             try
             {
-                par = ::read<parser<Opt, Ps...>>(in);
+                doc = ::read<document<Opt, Ps...>>(in);
             }
             catch(std::exception &e)
             {
