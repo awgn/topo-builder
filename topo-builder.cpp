@@ -102,20 +102,18 @@ try
     {
     case topo::parser_type::basic:
         {
-            topo::basic::parser::type config(config_file);
-                                               
+            topo::basic::parser::type config;
+            
             ///////////////////////////////////////////////////////////////////
             // parse config file...
 
-            if (!config.load(config_file, more::key_value_opt::non_strict().
-                                                               separator('=').
-                                                               comment('#')))
+            if (!parse(config_file, config))
                 throw std::runtime_error("parse error in config file!");
 
-            return topo::builder(std::move(more::get<topo::basic::parser::header>(config)),
-                                 std::move(more::get<topo::basic::parser::switches>(config)),
-                                 std::move(more::get<topo::basic::parser::nodes>(config)),
-                                 std::move(more::get<topo::basic::parser::footer>(config))
+            return topo::builder(std::move(config.get<topo::basic::parser::header>()),
+                                 std::move(config.get<topo::basic::parser::switches>()),
+                                 std::move(config.get<topo::basic::parser::nodes>()),
+                                 std::move(config.get<topo::basic::parser::footer>())
                                  );
 
         } break;

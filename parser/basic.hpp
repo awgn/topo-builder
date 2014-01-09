@@ -5,6 +5,8 @@
 
 #include <network.hpp>
 
+using namespace more::key_value;
+
 namespace topo {
                                        
     enum class parser_type
@@ -15,26 +17,25 @@ namespace topo {
     namespace basic {
     namespace parser {
 
-        // declare a vector of string:
-        //
+        // MAP_KEY(Strings, header)
+        // MAP_KEY(Strings, footer)
+        // MAP_KEY(std::vector<Node>, nodes)
+        // MAP_KEY(std::vector<Switch>, switches)
         
-        MAP_KEY(Strings, header)
+        DECLARE_KEY(header);
+        DECLARE_KEY(footer);
+        DECLARE_KEY(nodes);
+        DECLARE_KEY(switches);
 
-
-        MAP_KEY(Strings, footer)
-
-        // declare a vector of nodes:
-        //
-        
-        MAP_KEY(std::vector<Node>, nodes)
-
-        // declare a vector of switching services:
-        //
-
-        MAP_KEY(std::vector<Switch>, switches)
-        
-
-        typedef more::key_value_pack<header, nodes, switches, footer> type;
+        typedef more::key_value::parser
+        <
+                options<true, '#', '='>,
+                pair<header,    Strings>, 
+                pair<footer,    Strings>,
+                pair<nodes,     std::vector<Node>>,
+                pair<switches,  std::vector<Switch>>
+                
+        > type;
 
 
     } // namespace parser
