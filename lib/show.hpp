@@ -8,11 +8,12 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __MORE_SHOW__
-#define __MORE_SHOW__
+#ifndef MORE_SHOW
+#define MORE_SHOW
 
 #include <type_traits.hpp>  // more!
 #include <macro.hpp>        // more!
+#include <cxxabi.hpp>       // more!
 
 #include <ios>
 #include <iomanip>
@@ -30,7 +31,6 @@
 #include <string>
 #include <sstream>
 
-#include <cxxabi.h>
 
 
 #define MAKE_SHOW_PAIR(a, b) std::make_pair(std::string(#b), &UNPACK(a)::b)            
@@ -175,20 +175,6 @@ inline namespace more_show {
 
     namespace details
     {
-        // utilities 
-        //
-
-        inline std::string
-        demangle(const char * name)
-        {
-            int status;
-            std::unique_ptr<char, void(*)(void *)> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
-            if (status < 0) {
-                return std::string(1,'?');
-            }
-            return std::string(ret.get());
-        }
-
         // show_on policy 
         //
 
@@ -256,7 +242,7 @@ inline namespace more_show {
     show(Tp &&type, const char *n)
     {
         auto hdr = n == nullptr ? "" :
-                   n[0] == '\0' ? details::demangle(typeid(Tp).name()) : n;
+                   n[0] == '\0' ? demangle(typeid(Tp).name()) : n;
         
         return std::move(hdr) + ' ' + show(std::forward<Tp>(type));
     }
@@ -285,7 +271,10 @@ inline namespace more_show {
     inline std::string
     show(const char *v)
     {
-        return '"' + std::string(v) + '"';
+        if (v != nullptr)
+            return '"' + std::string(v) + '"';
+        else
+            return "\"nullptr\"";
     }
 
     ///////////////////////////////////////
@@ -504,7 +493,7 @@ inline namespace more_show {
         std::string
         operator()(Tp const &value)
         {
-            auto out = details::demangle(typeid(Tp).name()) + "{";
+            auto out = demangle(typeid(Tp).name()) + "{";
         
             details::generic_show_on<std::tuple<Ps...>, Tp, sizeof...(Ps)>::apply(out, data_, value); 
 

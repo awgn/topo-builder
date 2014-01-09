@@ -19,27 +19,12 @@
 #include <sstream>
 #include <algorithm>
 
-#include <cxxabi.h>
-
-#include <tuple_ext.hpp>
-#include <macro.hpp>
+#include <tuple_ext.hpp> // more!
+#include <macro.hpp>     // more!
+#include <cxxabi.hpp>    // more!
 
 namespace generic {
 
-    namespace
-    {
-        inline std::string
-        demangle(const char * name)
-        {
-            int status;
-            std::unique_ptr<char, void(*)(void *)> ret(abi::__cxa_demangle(name,0,0, &status), ::free);
-            if (status < 0) {
-                return std::string(1,'?');
-            }
-            return std::string(ret.get());
-        }
-    }
-    
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     struct base_args
