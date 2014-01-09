@@ -12,7 +12,6 @@
 
 namespace topo {
 
-
     typedef std::vector<std::string> Strings;
 
 
@@ -153,6 +152,8 @@ namespace topo {
     }
 
     typedef std::tuple<std::string, switch_type, std::vector<std::string>> Switch;
+    typedef std::tuple<std::string, switch_type> VirtualSwitch;
+
 
     inline std::string
     node_name(Switch const &s)
@@ -172,9 +173,22 @@ namespace topo {
     {
         return std::get<2>(s);
     }
+    
+    inline std::string
+    node_name(VirtualSwitch const &s)
+    {
+        return std::get<0>(s);
+    }
 
+
+    inline switch_type
+    node_type(VirtualSwitch const &s)
+    {
+        return std::get<1>(s);
+    }
+    
     typedef std::vector<Switch> Switches;
-
+    typedef std::vector<VirtualSwitch> VirtualSwitches;
 
     ///////////////////////////////////////////////////////////////////////////
     //
