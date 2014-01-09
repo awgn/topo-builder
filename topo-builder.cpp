@@ -1,6 +1,7 @@
 #include <basic_parser.hpp>
 #include <builder.hpp>
 #include <global.hpp>
+#include <network.hpp>
 
 #include <string>
 #include <stdexcept>
@@ -19,6 +20,8 @@ void usage(const char *name)
           "   -v, --verbose               Verbose mode");
 }
 
+
+using namespace topo;
 
 int
 main(int argc, char *argv[])
@@ -110,8 +113,36 @@ try
             if (!parse(config_file, config))
                 throw std::runtime_error("parse error in config file!");
 
+            auto & ss = config.get<topo::basic::parser::switches>();
+
+            Switches switches;
+
+            for(auto & s : ss)
+            {
+                Switch tmp;
+
+                switch(s.which())
+                {
+                    case 0: 
+                    {
+                        auto & v = s.get<VirtualSwitch>();
+                        tmp = Switch { node_name(v), node_type(v), std::vector<std::string>{} };
+
+                    } break;
+                    case 1: 
+                    {
+                        tmp = s.get<Switch>();
+
+                    } break;
+                    default:
+                        throw std::runtime_error("internal error");
+                }
+
+                switches.push_back(std::move(tmp));
+            }
+
             return topo::builder(std::move(config.get<topo::basic::parser::header>()),
-                                 std::move(config.get<topo::basic::parser::switches>()),
+                                 std::move(switches),
                                  std::move(config.get<topo::basic::parser::nodes>()),
                                  std::move(config.get<topo::basic::parser::footer>())
                                  );
