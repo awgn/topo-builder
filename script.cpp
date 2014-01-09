@@ -96,6 +96,7 @@ namespace topo
                     case switch_type::bridge :  tap_opt    += "tap"     + std::to_string(elem.second) + ' '; break;
                     case switch_type::openvs :  tap_opt    += "tap"     + std::to_string(elem.second) + ' '; break;
                     case switch_type::macvtap: macvtap_opt += "macvtap" + std::to_string(elem.second) + ' '; break;
+                    case switch_type::vale: break;
                 }
             }
 
