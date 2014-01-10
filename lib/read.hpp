@@ -594,7 +594,9 @@ inline namespace more_read {
 
         auto value = read<T>(in);
         auto res   = in.str();
-        auto count = in.rdbuf()->in_avail();
+        auto count = static_cast<std::string::size_type>(in.rdbuf()->in_avail());
+        if (count == static_cast<std::string::size_type>(-1))
+            throw std::runtime_error("read: in_avail");
         
         return std::make_pair(std::move(value), res.substr(res.size()-count, count));
     }

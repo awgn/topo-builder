@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cstdint>
 #include <string>
+#include <endian.h>
 
 typedef int16_t   int16be_t;
 typedef int32_t   int32be_t;
@@ -24,47 +25,73 @@ typedef uint32_t  uint32le_t;
 typedef uint64_t  uint64le_t;
 
 
-namespace endian_details 
+inline namespace more 
 {
-    template <typename T>
-    inline T ntoh(T n, std::integral_constant<size_t, 1>)
-    { 
-        return n; 
-    }
+    namespace details 
+    {
+        template <typename T>
+        inline T hton(T n, std::integral_constant<size_t, 1>)
+        { 
+            return n; 
+        }
+
+        template <typename T>
+        inline T hton(T n, std::integral_constant<size_t, 2>)
+        { 
+            return static_cast<T>(htons(static_cast<uint16_t>(n))); 
+        }
+
+        template <typename T>
+        inline T hton(T n, std::integral_constant<size_t, 4>) 
+        { 
+            return static_cast<T>(htonl(static_cast<uint32_t>(n))); 
+        }
+
+        template <typename T>
+        inline T hton(T n, std::integral_constant<size_t, 8>) 
+        { 
+            return static_cast<T>(htobe64(n)); 
+        }
+
+
+        template <typename T>
+        inline T ntoh(T n, std::integral_constant<size_t, 1>)
+        { 
+            return n; 
+        }
+
+        template <typename T>
+        inline T ntoh(T n, std::integral_constant<size_t, 2>)
+        { 
+            return static_cast<T>(ntohs(static_cast<uint16_t>(n))); 
+        }
+
+        template <typename T>
+        inline T ntoh(T n, std::integral_constant<size_t, 4>) 
+        { 
+            return static_cast<T>(ntohl(static_cast<uint32_t>(n))); 
+        }
+
+        template <typename T>
+        inline T ntoh(T n, std::integral_constant<size_t, 8>) 
+        { 
+            return static_cast<T>(be64toh(n)); 
+        }
+
+    } // namespace details
 
     template <typename T>
-    inline T ntoh(T n, std::integral_constant<size_t, 2>)
-    { 
-        return static_cast<T>(ntohs(static_cast<uint16_t>(n))); 
+    inline T ntoh(T n)
+    {
+        static_assert(std::is_integral<T>::value, "ntoh: T must be integral type");
+        return details::ntoh(n, std::integral_constant<size_t, sizeof(T)>());
     }
+
 
     template <typename T>
-    inline T ntoh(T n, std::integral_constant<size_t, 4>) 
-    { 
-        return static_cast<T>(ntohl(static_cast<uint32_t>(n))); 
+    inline T hton(T n)
+    {
+        static_assert(std::is_integral<T>::value, "hton: T must be integral type");
+        return details::hton(n, std::integral_constant<size_t, sizeof(T)>());
     }
-
-    template <typename T>
-    inline T ntoh(T n, std::integral_constant<size_t, 8>) 
-    { 
-        return (static_cast<T>(ntohl (n)) << 32) + ntohl (n >> 32); 
-    }
-
-} // namespace endian_details
-
-
-template <typename T>
-inline T ntoh(T n)
-{
-    static_assert(std::is_integral<T>::value, "ntoh: T must be integral type");
-    return endian_details::ntoh(n, std::integral_constant<size_t, sizeof(T)>());
 }
-
-
-template <typename T>
-inline T hton(T n)
-{
-    static_assert(std::is_integral<T>::value, "hton: T must be integral type");
-    return endian_details::ntoh(n, std::integral_constant<size_t, sizeof(T)>());
-}
-

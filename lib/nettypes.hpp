@@ -165,15 +165,11 @@ inline namespace inline_more
     }
 
     inline std::string
-    show(const ipv6_t &addr, const char * n = nullptr)
+    show(const ipv6_t &addr)
     {
-        std::string s;
-        if (n) {
-            s += std::string(n) + ' ';
-        }
         char buf[INET6_ADDRSTRLEN] = { '\0' };
         inet_ntop(AF_INET6, &addr, buf, sizeof(buf));
-        return s + std::string(buf);
+        return std::string(buf);
     }
 
 } // inline_more
