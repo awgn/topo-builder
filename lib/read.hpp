@@ -166,24 +166,14 @@ inline namespace more_read {
     } // namespace details
 
 
-    // utility for tag dispatching...
-    //
-    
-    template <typename Tp>
-    struct read_tag
-    {
-        typedef Tp type;
-    };
-
     //
     // specializations for specific types...
     //
 
     template <typename CharT, typename Traits>
-    bool 
-    read(read_tag<bool>, std::basic_istream<CharT,Traits>&in)
+    void 
+    read(bool &ret, std::basic_istream<CharT,Traits>&in)
     {
-        bool ret;
         in >> std::noboolalpha;
 
         if (!(in >> ret)) {
@@ -191,16 +181,14 @@ inline namespace more_read {
             if (!(in >> std::boolalpha >> ret))
                 throw std::runtime_error(details::error<bool>("parse error"));
         }
-        
-        return ret;
     }
 
     // pointers:
     //
     
     template <typename CharT, typename Traits>
-    char const *
-    read(read_tag<const char *>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(const char * &ret, std::basic_istream<CharT,Traits>&in)
     {
         std::string tmp;
 
@@ -210,59 +198,59 @@ inline namespace more_read {
 
         if (!tmp.empty())
         {
-            char * ptr = reinterpret_cast<char *>(malloc(tmp.size()+1));
+            auto ptr = reinterpret_cast<char *>(malloc(tmp.size()+1));
             std::strcpy(ptr, tmp.c_str());
-            return ptr;
+            ret = reinterpret_cast<const char *>(ptr);
         }
-        else 
-            return nullptr;
+        else
+            ret = nullptr;
     }
 
     template <typename CharT, typename Traits, typename Tp>
-    Tp *
-    read(read_tag<Tp *>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(Tp * &ret, std::basic_istream<CharT,Traits>&in)
     {
-        auto ret = new Tp{};
+        auto ptr = new Tp{};
 
-        if (!(in >> *ret)) {
-            delete ret;
+        if (!(in >> *ptr)) {
+            delete ptr;
             throw std::runtime_error(details::error<Tp *>("parse error"));
         }
         
-        return ret;
+        ret = ptr;
     }
 
     template <typename CharT, typename Traits, typename Tp>
-    std::shared_ptr<Tp>
-    read(read_tag<std::shared_ptr<Tp>>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(std::shared_ptr<Tp> &ret, std::basic_istream<CharT,Traits>&in)
     {
-        auto ret = std::make_shared<Tp>();
+        auto ptr = std::make_shared<Tp>();
 
-        if (!(in >> *ret)) 
+        if (!(in >> *ptr)) 
             throw std::runtime_error(details::error<Tp *>("parse error"));
         
-        return ret;
+        ret = std::move(ptr);
     }
 
     template <typename CharT, typename Traits, typename Tp>
-    std::unique_ptr<Tp>
-    read(read_tag<std::unique_ptr<Tp>>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(std::unique_ptr<Tp> &ret, std::basic_istream<CharT,Traits>&in)
     {
-        auto ret = std::unique_ptr<Tp>(new Tp{});
+        auto ptr = std::unique_ptr<Tp>(new Tp{});
 
-        if (!(in >> *ret)) {
+        if (!(in >> *ptr)) {
             throw std::runtime_error(details::error<Tp *>("parse error"));
         }
         
-        return ret;
+        ret = std::move(ptr);
     }
 
     // pair<T1,T2>:
     //
     
     template <typename T1, typename T2, typename CharT, typename Traits>
-    std::pair<T1,T2> 
-    read(read_tag<std::pair<T1,T2>>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(std::pair<T1,T2> &ret, std::basic_istream<CharT,Traits>&in)
     {
         if (details::consume('(', in)) {
 
@@ -272,7 +260,7 @@ inline namespace more_read {
             if (!details::consume(')', in))
                 throw std::runtime_error(details::error<std::pair<T1,T2>>("parse error"));
 
-            return std::make_pair(std::move(a), std::move(b));
+            ret = std::make_pair(std::move(a), std::move(b));
         }
         else if (details::consume('[', in)) {
 
@@ -282,14 +270,14 @@ inline namespace more_read {
             if (!details::consume(']', in))
                 throw std::runtime_error(details::error<std::pair<T1,T2>>("parse error"));
 
-            return std::make_pair(std::move(a), std::move(b));
+            ret = std::make_pair(std::move(a), std::move(b));
         }
         else {
 
             T1 a = read<T1>(in); details::consume("->", in); 
             T2 b = read<T2>(in);
 
-            return std::make_pair(std::move(a), std::move(b));
+            ret = std::make_pair(std::move(a), std::move(b));
         }
     }
     
@@ -297,11 +285,9 @@ inline namespace more_read {
     //
 
     template <typename T, size_t N, typename CharT, typename Traits>
-    std::array<T,N> 
-    read(read_tag<std::array<T,N>>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(std::array<T,N> &ret, std::basic_istream<CharT,Traits>&in)
     {
-        std::array<T, N> ret;
-
         if (!details::consume('[', in))
             throw std::runtime_error(details::error<std::array<T,N>>("parse error"));
 
@@ -312,16 +298,14 @@ inline namespace more_read {
 
         if (!details::consume(']', in))
             throw std::runtime_error(details::error<std::array<T,N>>("parse error"));
-
-        return ret;
     }
 
     // std::chrono::duration<Rep, Period>:
     //
     
     template <typename Rep, typename Period, typename CharT, typename Traits>
-    std::chrono::duration<Rep, Period>
-    read(read_tag<std::chrono::duration<Rep, Period>>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(std::chrono::duration<Rep, Period> &ret, std::basic_istream<CharT,Traits>&in)
     {
         typedef std::chrono::duration<Rep, Period> Duration;
         
@@ -331,45 +315,38 @@ inline namespace more_read {
             throw std::runtime_error(details::error<std::chrono::duration<Rep, Period>>("parse error"));
 
         if (unit.compare("ns") == 0)
-            return std::chrono::duration_cast<Duration>(std::chrono::nanoseconds(value));
-
-        if (unit.compare("us") == 0)
-            return std::chrono::duration_cast<Duration>(std::chrono::microseconds(value));
-        
-        if (unit.compare("ms") == 0)
-            return std::chrono::duration_cast<Duration>(std::chrono::milliseconds(value));
-
-        if (unit.compare("s") == 0)
-            return std::chrono::duration_cast<Duration>(std::chrono::seconds(value));
-        
-        if (unit.compare("m") == 0)
-            return std::chrono::duration_cast<Duration>(std::chrono::minutes(value));
-
-        if (unit.compare("h") == 0)
-            return std::chrono::duration_cast<Duration>(std::chrono::hours(value));
-
-        throw std::runtime_error(details::error<std::chrono::duration<Rep, Period>>("parse error"));
+            ret = std::chrono::duration_cast<Duration>(std::chrono::nanoseconds(value));
+        else if (unit.compare("us") == 0)
+            ret = std::chrono::duration_cast<Duration>(std::chrono::microseconds(value));
+        else if (unit.compare("ms") == 0)
+            ret = std::chrono::duration_cast<Duration>(std::chrono::milliseconds(value));
+        else if (unit.compare("s") == 0)
+            ret = std::chrono::duration_cast<Duration>(std::chrono::seconds(value));
+        else if (unit.compare("m") == 0)
+            ret = std::chrono::duration_cast<Duration>(std::chrono::minutes(value));
+        else if (unit.compare("h") == 0)
+            ret = std::chrono::duration_cast<Duration>(std::chrono::hours(value));
+        else
+            throw std::runtime_error(details::error<std::chrono::duration<Rep, Period>>("parse error"));
     }
              
     // std::chrono::time_point<Clock, Duration>:
     //
     
     template <typename Clock, typename Dur, typename CharT, typename Traits>
-    std::chrono::time_point<Clock, Dur>
-    read(read_tag<std::chrono::time_point<Clock, Dur>>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(std::chrono::time_point<Clock, Dur>& ret, std::basic_istream<CharT,Traits>&in)
     {
-        return std::chrono::time_point<Clock, Dur>( read<Dur>(in) );
+        ret = std::chrono::time_point<Clock, Dur>( read<Dur>(in) );
     }
     
     // std::tuple<Ts...>:
     //
 
     template <typename ...Ts, typename CharT, typename Traits>
-    std::tuple<Ts...> 
-    read(read_tag<std::tuple<Ts...>>, std::basic_istream<CharT,Traits>&in)
+    void 
+    read(std::tuple<Ts...> &ret, std::basic_istream<CharT,Traits>&in)
     {
-        std::tuple<Ts...> ret;
-
         if (!details::consume('(', in))
             throw std::runtime_error(details::error<std::tuple<Ts...>>("parse error"));
 
@@ -377,8 +354,6 @@ inline namespace more_read {
 
         if (!details::consume(')', in))
             throw std::runtime_error(details::error<std::tuple<Ts...>>("parse error"));
-
-        return ret;
     }
 
 #ifdef MORE_VARIANT_HPP
@@ -413,10 +388,10 @@ inline namespace more_read {
     };
 
     template <typename ...Ts, typename CharT, typename Traits>
-    more::variant<Ts...> 
-    read(read_tag<more::variant<Ts...>>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(more::variant<Ts...>& ret, std::basic_istream<CharT,Traits>&in)
     {
-        return read_variant<Ts...>::template run<Ts...>(in);
+        ret = read_variant<Ts...>::template run<Ts...>(in);
     }
 #endif
 
@@ -424,14 +399,14 @@ inline namespace more_read {
     //
 
     template <typename CharT, typename Traits>
-    std::string 
-    read(read_tag<std::string>, std::basic_istream<CharT,Traits>&in)
+    void
+    read(std::string &ret, std::basic_istream<CharT,Traits>&in)
     {
         typedef std::string::traits_type traits_type;
 
         in >> std::noskipws >> std::ws;
 
-        std::string str; str.reserve(32);
+        ret.reserve(32);
         traits_type::char_type c;
 
         enum class pstate { null, raw_string, escaped_char, quoted_string, escaped_char2 };
@@ -456,7 +431,7 @@ inline namespace more_read {
             case pstate::null:
                 {
                     if (c == '"')       { in.get(); state = pstate::quoted_string; break;}
-                    if (raw_char(c))    { in.get(); state = pstate::raw_string; str.push_back(c); break;}
+                    if (raw_char(c))    { in.get(); state = pstate::raw_string; ret.push_back(c); break;}
                     if (c == '\\')      { in.get(); state = pstate::escaped_char;  break;} 
 
                     stop = true;
@@ -465,7 +440,7 @@ inline namespace more_read {
 
             case pstate::raw_string:
                 {
-                    if (raw_char(c))    { in.get(); state = pstate::raw_string; str.push_back(c); break; }
+                    if (raw_char(c))    { in.get(); state = pstate::raw_string; ret.push_back(c); break; }
                     if (c == '\\')      { in.get(); state = pstate::escaped_char; break; } 
 
                     stop = true;
@@ -474,7 +449,7 @@ inline namespace more_read {
 
             case pstate::escaped_char:
                 {
-                    in.get(); state = pstate::raw_string; str.push_back(c);
+                    in.get(); state = pstate::raw_string; ret.push_back(c);
 
                 } break;
 
@@ -483,13 +458,13 @@ inline namespace more_read {
                     if (c == '"')       { in.get(); state = pstate::quoted_string; stop = true; quoted = true; break;}
                     if (c == '\\')      { in.get(); state = pstate::escaped_char2; break;} 
 
-                    in.get(); str.push_back(c); 
+                    in.get(); ret.push_back(c); 
 
                 } break;
 
             case pstate::escaped_char2:
                 {
-                    in.get(); str.push_back(c); state = pstate::quoted_string;
+                    in.get(); ret.push_back(c); state = pstate::quoted_string;
 
                 } break;
             }
@@ -497,10 +472,9 @@ inline namespace more_read {
 
         in >> std::skipws;
 
-        if (!quoted && str.empty())
+        if (!quoted && ret.empty())
             throw std::runtime_error(details::error<std::string>("parse error"));
 
-        return str;
     }
     
     // container:
@@ -508,12 +482,9 @@ inline namespace more_read {
     
     template <typename Tp, typename CharT, typename Traits>
     typename std::enable_if<
-        more::traits::is_container<Tp>::value,
-    Tp>::type
-    read(read_tag<Tp>, std::basic_istream<CharT,Traits>& in)
+        more::traits::is_container<Tp>::value>::type
+    read(Tp &ret, std::basic_istream<CharT,Traits>& in)
     {
-        Tp ret;
-
         if (!details::consume('[', in))
             throw std::runtime_error(details::error<Tp>("parse error"));
 
@@ -521,8 +492,6 @@ inline namespace more_read {
         {
             details::insert(ret, read<typename Tp::value_type>(in));
         }
-
-        return ret;
     }
     
     // generic types supporting extraction operator>>():
@@ -530,14 +499,11 @@ inline namespace more_read {
     
     template <typename Tp, typename CharT, typename Traits>
     typename std::enable_if<
-        !more::traits::is_container<Tp>::value,
-    Tp>::type
-    read(read_tag<Tp>, std::basic_istream<CharT,Traits>& in)
+        !more::traits::is_container<Tp>::value>::type
+    read(Tp &ret, std::basic_istream<CharT,Traits>& in)
     {
-        Tp ret{};
         if (!(in >> ret))
             throw std::runtime_error(details::error<int>("parse error"));
-        return ret;
     }
     
     //////////////////////////////////////////////////////////////////////////////////
@@ -576,7 +542,9 @@ inline namespace more_read {
 
         try
         {
-            return read(read_tag<typename details::decay<T>::type>(), in);
+            typename details::decay<T>::type ret;
+            read(ret, in);
+            return ret;
         }
         catch(...)
         {

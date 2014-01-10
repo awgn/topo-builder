@@ -340,8 +340,8 @@ namespace more {
         // read for document type:
         
         template <typename CharT, typename Traits, typename Opt, typename ...Ps>
-        inline document<Opt, Ps...>
-        read(read_tag<document<Opt, Ps...>>, std::basic_istream<CharT,Traits>&in)
+        void
+        read(document<Opt, Ps...> &doc, std::basic_istream<CharT,Traits>&in)
         {
             bool bracket = false;
 
@@ -349,8 +349,6 @@ namespace more {
             {
                 bracket = true;
             }
-
-            document<Opt, Ps...> doc;
 
             while(in)
             {
@@ -420,10 +418,7 @@ namespace more {
 
             if (bracket)
                 throw std::runtime_error("document: unbalanced brackets");
-
-            return doc;
         }
-
 
         // parse: from string...
 
